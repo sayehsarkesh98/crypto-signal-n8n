@@ -18,15 +18,16 @@ jq --arg n "Quant Engine" --rawfile src engines/quant_engine.js \
   workflow_export.json > workflow_export.json.new && mv workflow_export.json.new workflow_export.json
 ```
 
-Node-name ↔ file map: Compute Indicators → `compute_indicators.js`, Quant Engine → `quant_engine.js`, Backtest Engine → `backtest_engine.js`, Narrator FA → `narrator_fa.js`, Log NO_TRADE → `log_no_trade.js`, Sanitize Telegram Text → `sanitize_telegram.js`. Extract a node's code with `jq -r '.workflow.nodes[] | select(.name=="…") | .parameters.jsCode'`.
+Node-name ↔ file map: Compute Indicators → `compute_indicators.js`, Quant Engine → `quant_engine.js`, Backtest Engine → `backtest_engine.js`, Validate Gates → `validate_gates.js`, Narrator FA → `narrator_fa.js`, Log NO_TRADE → `log_no_trade.js`, Sanitize Telegram Text → `sanitize_telegram.js`. Tracker code nodes live in `tests/evaluate_outcomes.js` (Evaluate Outcomes) — same sync pattern. Test harnesses (`tests/test_*.js`) mock `$input`/`$` and run under plain `node tests/test_<name>.js`. Extract a node's code with `jq -r '.workflow.nodes[] | select(.name=="…") | .parameters.jsCode'`.
 
 ## Main workflow architecture (every 4h at :35)
 
 ```
 Schedule (:35) ─fan-out→ 11 HTTP nodes ──→ Merge Inputs (5 inputs) → Compute Indicators → Quant Engine
 Quant Engine → Is TRADE? ($json.output.decision == "TRADE")
-  TRUE:  Validate Gates → Fetch 1D History → Backtest Engine → Ledger Insert → Narrator FA → Sanitize Telegram Text → Telegram HTTP Sender
-         Validate Gates → Build Telegram Payload          (terminal; not wired onward — legacy)
+  TRUE:  Fetch 1D History → Backtest Engine → Validate Gates → Gates Pass? (IF on $json.gate_check.passed)
+         TRUE:  Ledger Insert → Narrator FA → Sanitize Telegram Text → Telegram HTTP Sender
+         FALSE: Log NO_TRADE → Narrator FA → Sanitize Telegram Text → Telegram HTTP Sender
   FALSE: Log NO_TRADE → Narrator FA → Sanitize Telegram Text → Telegram HTTP Sender
 ```
 
@@ -46,13 +47,13 @@ HTTP sources: Binance spot `ticker/24hr` (10 pairs) + `klines` (4H ×4, 1D ×400
 
 ## Backtest + gates (backtest_engine.js, Validate Gates)
 
-Backtest Engine replays the exact setup over the 1D klines: armed when a close crosses into `entry_zone` from outside; per candle, stop is checked before TPs (conservative); fees 5bps/side + 2bps slip. `Validate Gates` hard-fails unless trades≥30, expectancy>0.15R, PF≥1.4, TP1 hit ≥0.55, TP2 ≥0.35, confidence ≥75 — but the gates are **advisory, not blocking**: Quant Engine always emits `backtest_est.trades = 0`, so `gate_check.passed` is always false and the signal is still fetched, backtested, ledged, and sent. Real backtest stats flow into the Telegram message via Backtest Engine output. The trade-branch Narrator reads that output through the cross-node reference `$('Backtest Engine')` — its direct `$input` is the Ledger Insert row (inserted columns only, no backtest fields; a Data Table insert does not pass input through). On the NO_TRADE branch that read throws and Narrator falls back to `$input` (the Log NO_TRADE echo). In the tracker, Evaluate Outcomes must flatten **all** `Fetch Ticker` items with `.all()` — the HTTP node splits the 4-symbol ticker array into one item per symbol, so `.first()` sees only BTCUSDT.
+Backtest Engine v3 replays the setup as **multi-instance with no look-ahead**: at every historical 1D bar it re-derives the live setup's family/direction triggers (SMA20/50 stack, RSI14, ADX14, 20-bar H/L — same formulas as Compute Indicators) from data up to that bar, enters at that bar's close, and resolves forward bar-by-bar (stop first = conservative; TP1/2/3 at 1.5/2.5/4R of that instance's own ATR risk; TIME exit after 10 bars at the close). One trade open at a time; fees 5bps/side + 2bps slip. (v2's anachronism — today's 4H levels replayed over 400 past days — is what this replaced.) `Validate Gates` now runs **after** Backtest Engine and gates the real replay: trades≥30, expectancy>0.15R, PF≥1.4, TP1 hit ≥0.55, TP2 ≥0.35, confidence ≥75. The `Gates Pass?` IF node makes the gates **blocking**: pass → Ledger Insert; fail → Log NO_TRADE with a `gate-failed:` reason listing the failed gates (Telegram still gets the message, including the real backtest numbers). Narrator reads the full context via `$('Validate Gates')` (its direct `$input` is the Ledger Insert row — a Data Table insert does not pass input through); on the Quant-NO_TRADE branch that read throws and Narrator falls back to `$input`. In the tracker, Evaluate Outcomes must flatten **all** `Fetch Ticker` items with `.all()` — the HTTP node splits the 4-symbol ticker array into one item per symbol, so `.first()` sees only BTCUSDT.
 
 ## Signal Tracker (tracker_export.json, every 4h at :40)
 
-Schedule → Fetch Ticker (4 pairs) → Ledger Get OPEN → Evaluate Outcomes → Ledger Update → Sanitize Outcome → Telegram. Each OPEN row is checked against the live price at that moment: STOP if beyond stop_loss (−1R), TP1 if reached (+1.4R recorded, i.e. 1.5 − fees). STOP wins if both hit at check time; there is no intrabar sequencing. Purpose: build real-world hit statistics to retune the engine's thresholds (confluences, confidence floor, RSI veto).
+Schedule → Fetch Ticker (4 pairs) → Ledger Get OPEN → Evaluate Outcomes → Ledger Update → Sanitize Outcome → Telegram. Each OPEN row is checked against the live price at that moment: STOP if beyond stop_loss (−1R), TP1 if reached (+1.4R recorded, i.e. 1.5 − fees), or TIME_STOP once the row is older than `time_stop` hours (default 24, from `time_stop_1h_candles: 24`) with the signed R of the live price — before v3, rows that never hit either level stayed OPEN forever. STOP wins if both hit at check time; there is no intrabar sequencing. Purpose: build real-world hit statistics to retune the engine's thresholds (confluences, confidence floor, RSI veto).
 
-**Data store:** n8n Data Table `eOctngGT0qLnzQ54` (the "signal_ledger"). Columns: `created_at, symbol, direction, setup_family, entry_mid, stop_loss, tp1, tp2, tp3, confidence, confluence_passed, regime_score, status (OPEN|STOP|TP1), exit_price, outcome_R, closed_at`. The table id is instance-specific — re-link `dataTableId` in Ledger Insert/Get/Update after importing into a fresh n8n instance.
+**Data store:** n8n Data Table `eOctngGT0qLnzQ54` (the "signal_ledger"). Columns: `created_at, symbol, direction, setup_family, entry_mid, stop_loss, tp1, tp2, tp3, confidence, confluence_passed, regime_score, status (OPEN|STOP|TP1|TIME_STOP), exit_price, outcome_R, closed_at`. `confluence_passed` and `regime_score` are echoed from Quant Engine through Backtest Engine — a Data Table insert drops unmapped input fields, so any new stat must be added to that echo chain first. The table id is instance-specific — re-link `dataTableId` in Ledger Insert/Get/Update after importing into a fresh n8n instance.
 
 ## Conventions
 
