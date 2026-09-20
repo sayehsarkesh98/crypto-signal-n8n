@@ -1,0 +1,1232 @@
+{
+  "workflow": {
+    "id": "UJZtZI0WcaDN0jDs",
+    "name": "Crypto Signal v1 (4h)",
+    "active": true,
+    "isArchived": false,
+    "versionId": "2adb8067-97a1-4af2-9ab8-43dbf513c7a5",
+    "activeVersionId": "2adb8067-97a1-4af2-9ab8-43dbf513c7a5",
+    "triggerCount": 1,
+    "nodeCount": 32,
+    "createdAt": "2026-09-16T23:25:55.144Z",
+    "updatedAt": "2026-09-20T18:06:24.321Z",
+    "settings": {
+      "executionOrder": "v1",
+      "availableInMCP": true,
+      "binaryMode": "separate"
+    },
+    "tags": [],
+    "parentFolderId": null,
+    "scopes": [
+      "execution:reveal",
+      "workflow:create",
+      "workflow:delete",
+      "workflow:disableRedaction",
+      "workflow:enableRedaction",
+      "workflow:execute",
+      "workflow:execute-chat",
+      "workflow:export",
+      "workflow:import",
+      "workflow:list",
+      "workflow:move",
+      "workflow:publish",
+      "workflow:read",
+      "workflow:share",
+      "workflow:unpublish",
+      "workflow:unshare",
+      "workflow:update"
+    ],
+    "canExecute": true,
+    "connections": {
+      "Every 4h": {
+        "main": [
+          [
+            {
+              "node": "Fetch Spot Klins+Ticker",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Fetch 4H Klines Batch",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Fetch Funding+OI",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Fetch FearGreed+Global",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Fetch CoinGecko Global",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Fetch ETH Klines",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Fetch SOL Klines",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Fetch BNB Klines",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Fetch Funding ETH",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Fetch Funding SOL",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Fetch Funding BNB",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Signal JSON Parser": {
+        "ai_outputParser": [
+          [
+            {
+              "node": "Signal Agent",
+              "type": "ai_outputParser",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is TRADE?": {
+        "main": [
+          [
+            {
+              "node": "Validate Gates",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Log NO_TRADE",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Spot Klins+Ticker": {
+        "main": [
+          [
+            {
+              "node": "Merge Inputs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch 4H Klines Batch": {
+        "main": [
+          [
+            {
+              "node": "Merge Inputs",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Fetch Funding+OI": {
+        "main": [
+          [
+            {
+              "node": "Merge Inputs",
+              "type": "main",
+              "index": 2
+            }
+          ]
+        ]
+      },
+      "Fetch FearGreed+Global": {
+        "main": [
+          [
+            {
+              "node": "Merge Inputs",
+              "type": "main",
+              "index": 3
+            }
+          ]
+        ]
+      },
+      "Fetch CoinGecko Global": {
+        "main": [
+          [
+            {
+              "node": "Merge Inputs",
+              "type": "main",
+              "index": 4
+            }
+          ]
+        ]
+      },
+      "Merge Inputs": {
+        "main": [
+          [
+            {
+              "node": "Compute Indicators",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate Gates": {
+        "main": [
+          [
+            {
+              "node": "Fetch 1D History",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Build Telegram Payload",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch 1D History": {
+        "main": [
+          [
+            {
+              "node": "Backtest Engine",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fable Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Signal Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "LLM HTTP Call": {
+        "main": [
+          [
+            {
+              "node": "Parse LLM JSON",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build LLM Body": {
+        "main": [
+          [
+            {
+              "node": "LLM HTTP Call",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Sanitize Telegram Text": {
+        "main": [
+          [
+            {
+              "node": "Telegram HTTP Sender",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Compute Indicators": {
+        "main": [
+          [
+            {
+              "node": "Quant Engine",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Quant Engine": {
+        "main": [
+          [
+            {
+              "node": "Is TRADE?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Backtest Engine": {
+        "main": [
+          [
+            {
+              "node": "Ledger Insert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Log NO_TRADE": {
+        "main": [
+          [
+            {
+              "node": "Narrator FA",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Narrator FA": {
+        "main": [
+          [
+            {
+              "node": "Sanitize Telegram Text",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Ledger Insert": {
+        "main": [
+          [
+            {
+              "node": "Narrator FA",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "hours",
+                "hoursInterval": 4,
+                "triggerAtMinute": 35
+              }
+            ]
+          }
+        },
+        "id": "0dba1002-95d5-476c-9f05-1c983b739cac",
+        "name": "Every 4h",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          240,
+          304
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://api.binance.com/api/v3/ticker/24hr",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "symbols",
+                "value": "[\"BTCUSDT\",\"ETHUSDT\",\"SOLUSDT\",\"BNBUSDT\",\"XRPUSDT\",\"DOGEUSDT\",\"ADAUSDT\",\"AVAXUSDT\",\"LINKUSDT\",\"ARBUSDT\"]"
+              }
+            ]
+          },
+          "options": {
+            "response": {},
+            "timeout": 30000
+          }
+        },
+        "id": "704e8af3-93bb-4b2b-b199-7d3ae6c95d50",
+        "name": "Fetch Spot Klins+Ticker",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          464,
+          304
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://api.binance.com/api/v3/klines",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "symbol",
+                "value": "BTCUSDT"
+              },
+              {
+                "name": "interval",
+                "value": "4h"
+              },
+              {
+                "name": "limit",
+                "value": "200"
+              }
+            ]
+          },
+          "options": {
+            "response": {},
+            "timeout": 30000
+          }
+        },
+        "id": "b6bb46f1-7d08-4663-bbfa-b6700b56795d",
+        "name": "Fetch 4H Klines Batch",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          688,
+          304
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://fapi.binance.com/fapi/v1/premiumIndex",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "symbol",
+                "value": "BTCUSDT"
+              }
+            ]
+          },
+          "options": {
+            "response": {},
+            "timeout": 30000
+          }
+        },
+        "id": "3427988d-0e67-4ccf-b7b4-590660eea2e2",
+        "name": "Fetch Funding+OI",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          688,
+          528
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://api.alternative.me/fng/",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "limit",
+                "value": "7"
+              },
+              {
+                "name": "format",
+                "value": "json"
+              }
+            ]
+          },
+          "options": {
+            "response": {},
+            "timeout": 30000
+          }
+        },
+        "id": "0c8af5bc-f0ee-46cc-a9c5-c90cae98c0cf",
+        "name": "Fetch FearGreed+Global",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          688,
+          752
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// Compute Indicators v2 MULTI \u2014 BTC + ETH + SOL + BNB.\n// Merge-append delivers candles as SEPARATE ITEMS. Each kline item is an array.\n// Tagging: HTTP nodes now wrap candles as {symbol, candles:[...]}? No \u2014 n8n HTTP returns\n// raw array items. To tag per-symbol we rely on ORDER: Merge appends input0..input4 in order,\n// but klines of 4 symbols interleave. ROBUST FIX: separate HTTP nodes per symbol, each into\n// its own Merge input is NOT possible (merge has 5 inputs, klines need 4).\n// CHOSEN DESIGN: ONE HTTP node per symbol pair? Simplest reliable: keep Merge for\n// ticker/funding/fng/cg (unchanged), and fetch the 4 kline sets with FOUR HTTP nodes\n// chained Compute-side via $() reads. n8n $() can read other nodes' outputs:\n//   $('Fetch ETH Klins').all() etc. This avoids merge-order fragility entirely.\nfunction ind(klines){\n  function sma(a,n){ if(!a || a.length<n) return null; let s=0; for(let i=a.length-n;i<a.length;i++) s+=a[i]; return s/n; }\n  function ema(a,n){ if(!a || !a.length) return null; const k=2/(n+1); let e=a[0]; for(let i=1;i<a.length;i++) e=a[i]*k+e*(1-k); return e; }\n  function rsi(cl,n){ if(!cl || cl.length<n+1) return null; let g=0,l=0; for(let i=cl.length-n;i<cl.length;i++){ const c=cl[i]-cl[i-1]; if(c>0) g+=c; else l-=c; } if(l===0) return 100; return 100-100/(1+(g/n)/(l/n)); }\n  function atr(h,l,c,n){ if(!c || c.length<n+1) return null; const trs=[]; for(let i=c.length-n;i<c.length;i++){ trs.push(Math.max(h[i]-l[i], Math.abs(h[i]-c[i-1]), Math.abs(l[i]-c[i-1]))); } let s=0; for(const v of trs) s+=v; return s/trs.length; }\n  function stoch(cl,hi,lo,kp,kd){ if(!cl || cl.length<kp+kd) return null; const ks=[]; for(let i=kp-1;i<cl.length;i++){ const hh=Math.max.apply(null,hi.slice(i-kp+1,i+1)); const ll=Math.min.apply(null,lo.slice(i-kp+1,i+1)); ks.push(hh===ll?50:(cl[i]-ll)/(hh-ll)*100); } const k=ks[ks.length-1]; const d=(ks[ks.length-1]+ks[ks.length-2]+ks[ks.length-3])/3; return {k:k, d:d}; }\n  function adx(h,l,c,n){ if(!c || c.length < n*2+2) return null; let plus=0,minus=0,tr=0;\n for(let i=c.length-n*2+1;i<c.length;i++){ const up=h[i]-h[i-1], dn=l[i-1]-l[i]; let x=Math.max(h[i]-l[i],Math.abs(h[i]-c[i-1]),Math.abs(l[i]-c[i-1])); tr+=x; plus+= (up>dn&&up>0)?up:0; minus+= (dn>up&&dn>0)?dn:0; }\n const di_p=tr>0?100*plus/tr:0, di_m=tr>0?100*minus/tr:0; const sum=di_p+di_m; return sum>0?Math.round(100*Math.abs(di_p-di_m)/sum):0; }\nfunction macd(a){ if(!a || a.length<35) return null; function e(v,n){ const k=2/(n+1); let x=v[0]; for(let i=1;i<v.length;i++) x=v[i]*k+x*(1-k); return x; } const line=e(a.slice(-60),12)-e(a.slice(-60),26); return {line:line, hist_dir:'see-1h-trigger'}; }\n  // normalize: array of candle-arrays OR array of items\n  let K = klines;\n  if(!Array.isArray(K)) return { error: 'not-array', closes: [] };\n  if(K.length && !Array.isArray(K[0]) && K[0].json) K = K.map(function(i){ return i.json; });\n  K = K.filter(function(x){ return Array.isArray(x); });\n  if(!K.length) return { error: 'no-candles', closes: [] };\n  K.sort(function(a,b){ return a[0]-b[0]; });\n  const cl=K.map(function(r){ return parseFloat(r[4]); });\n  const hi=K.map(function(r){ return parseFloat(r[2]); });\n  const lo=K.map(function(r){ return parseFloat(r[3]); });\n  const vo=K.map(function(r){ return parseFloat(r[5]); });\n  const o={ closes: cl.slice(-5), sma20: sma(cl,20), sma50: sma(cl,50), sma200: cl.length>=200?sma(cl,200):null,\n    ema12: ema(cl,12), ema26: ema(cl,26), rsi14: rsi(cl,14), atr14: atr(hi,lo,cl,14), stoch: stoch(cl,hi,lo,14,3), macd: macd(cl), adx14: adx(hi,lo,cl,14),\n    high20: null, low20: null, relvol: null, chg7: null, chg30: null, bb: null, atr_pct: null, count: cl.length };\n  if(o.atr14 && cl.length) o.atr_pct = o.atr14/cl[cl.length-1]*100;\n  if(cl.length>=20){ const basis=sma(cl,20); let sd=0; const w=cl.slice(-20); for(const v of w) sd+=(v-basis)*(v-basis); sd=Math.sqrt(sd/20); o.bb={mid:basis, upper:basis+2*sd, lower:basis-2*sd, pos: cl[cl.length-1]>basis+2*sd?'above-upper':(cl[cl.length-1]<basis-2*sd?'below-lower':(cl[cl.length-1]>basis?'upper-half':'lower-half'))}; }\n  if(hi.length>=20){ o.high20=Math.max.apply(null,hi.slice(-20)); o.low20=Math.min.apply(null,lo.slice(-20)); }\n  if(vo.length>=21){ let s=0; for(let i=vo.length-21;i<vo.length-1;i++) s+=vo[i]; const avg=s/20; o.relvol=avg>0?vo[vo.length-1]/avg:null; }\n  if(cl.length>=8) o.chg7=(cl[cl.length-1]/cl[cl.length-8]-1)*100;\n  if(cl.length>=31) o.chg30=(cl[cl.length-1]/cl[cl.length-31]-1)*100;\n  o.computed_at = new Date().toISOString();\n  return o;\n}\nfunction grab(name){\n  try {\n    const items = $(name).all().map(function(i){ return i.json; });\n    // HTTP klines node: items are candle arrays (or single array)\n    if(items.length === 1 && Array.isArray(items[0]) && items[0].length && Array.isArray(items[0][0])) return items[0];\n    return items;\n  } catch(e){ return { error: String(e).slice(0,120) }; }\n}\n// merge passthrough data (ticker/funding/fng/cg) from $input as before\nconst items = $input.all().map(function(i){ return i.json; });\nlet ticker=[], funding=null, fng=null, cg=null;\nfor(const d of items){\n  if(Array.isArray(d)) continue; // klines no longer come via merge\n  if(d && d.symbol && d.lastPrice){ ticker.push(d); continue; }\n  if(d && d.markPrice && d.lastFundingRate && !funding){ funding=d; continue; }\n  if(d && d.data && d.data.market_cap_percentage){ cg=d; continue; }\n  if(d && ((d.data && Array.isArray(d.data)) || d.name==='Fear and Greed Index')){ fng=d; continue; }\n}\nconst symbols = ['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT'];\nconst nodeMap = { BTCUSDT: 'Fetch 4H Klines Batch', ETHUSDT: 'Fetch ETH Klines', SOLUSDT: 'Fetch SOL Klines', BNBUSDT: 'Fetch BNB Klines' };\nconst feats = {};\nfor(const s of symbols){ feats[s] = ind(grab(nodeMap[s])); }\n// funding per symbol\nfunction grabFund(sym){\n  try {\n    const j = $('Fetch Funding ' + sym.replace('USDT','')).first().json;\n    return j;\n  } catch(e){ return null; }\n}\nconst funds = { BTCUSDT: funding };\nfor(const s of ['ETHUSDT','SOLUSDT','BNBUSDT']){ const f = grabFund(s); if(f) funds[s] = f; }\nlet fngNow=null, fng7=[];\ntry{ const src=fng.data||fng; const arr=src.data||src; if(Array.isArray(arr)){ fngNow=parseFloat(arr[0].value); fng7=arr.map(function(x){ return parseFloat(x.value); }); } }catch(e){}\nlet dom=null, mcapChg=null;\ntry{ dom=cg.data.market_cap_percentage.btc; mcapChg=cg.data.market_cap_change_percentage_24h_usd; }catch(e){}\n// keep legacy single-symbol fields (BTC) so old consumers don't break\nreturn [{ json: { ticker: ticker, funding: funding, fear_greed: fngNow, fear_greed_7d: fng7,\n  btc_dominance: dom, mcap_chg24: mcapChg, features: feats['BTCUSDT'],\n  features_multi: feats, funds_multi: funds } }];\n",
+          "mode": "runOnceForAllItems",
+          "language": "javaScript"
+        },
+        "id": "5221fff5-76f6-46f4-bd7b-cf4250005b3c",
+        "name": "Compute Indicators",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          912,
+          304
+        ]
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ 'MARKET_SNAPSHOT=' + $json.features.computed_at + ' | SMA20=' + $json.features.sma20 + ' RSI14=' + $json.features.rsi14 + ' ATR14=' + $json.features.atr14 + ' || FULL BRIEF FOLLOWS IN SYSTEM MESSAGE. Analyze the snapshot above plus this brief: ' }}",
+          "hasOutputParser": true,
+          "options": {
+            "systemMessage": "ROLE: macro-aware crypto quant-research agent inside a scheduled n8n workflow. Fuse macro, news, sentiment, derivatives, technicals into ONE low-risk signal or justified NO_TRADE. Conservative: rejecting weak setups is success. Analysis only, not financial advice. Never invent numbers; every number comes from workflow input.\n\nUNIVERSE: BTCUSDT ETHUSDT SOLUSDT BNBUSDT XRPUSDT DOGEUSDT ADAUSDT AVAXUSDT LINKUSDT ARBUSDT (Binance USDT).\nTIMEFRAMES: 1D trend filter + 4H setup + 1H trigger. Horizon intraday-to-days. LONG and SHORT allowed. Risk per trade 1%.\n\nPHASE 0 MACRO+NEWS GATE: risk-off if >=2 hold: SPX day<-1.5%, VIX>30 or VIX day>+20%, DXY up AND gold up same day, US10Y up >10bps with equities down. Coin killers (hack, regulator, delist rumor, depeg) veto that coin; market-wide shock forces NO_TRADE. event_blackout true => NO_TRADE event_blackout. Headlines older than 24h carry zero entry weight.\n\nPHASE 1 REGIME+SENTIMENT: 6-component 0-100 score: BTC trend 25, alt breadth 20, dominance jointly with BTC trend 15, funding 15 (avg>0.05%/8h penalizes LONGs), drawdown+vol 15, momentum thrust 10. Zones 80-100 RISK_ON, 40-79 NEUTRAL, 0-39 RISK_OFF. Sentiment overlay veto+tax only: composite=0.4*FearGreed+0.4*news+0.2*momentum; >=81 veto LONGs, <=20 veto SHORTs, 61-80 LONG conf-5, 21-40 SHORT conf-5.\n\nPHASE 2 TECHNICALS+POSITIONING per symbol 4H confirmed by 1D timed 1H: SMA20/50/200 stack+slope, EMA12/26, ADX>=20 trend, RSI14, Stoch, MACD, Bollinger+squeeze, ATR14, relvol>1.2 for breakouts, 20-bar high/low, S/R, dist to SMA50/200, 7d/30d returns. OI two-factor read; funding overheated vetoes direction; movers >+15% no chase LONGs, <-15% no knife SHORTs except range edge. 4H/1D conflict => NO_TRADE unless RANGE_FADE with boundaries.\n\nPHASE 3 SETUPS: A TREND-CONTINUATION (1D intact + 4H pullback to value + 1H trigger + volume + supportive OI). B RANGE-FADE (ADX<20, fade edge, no mid entries). Min 6 independent confluences.\n\nPHASE 4 SIGNAL: direction, entry_zone max 0.5xATR wide, stop beyond structure+0.25xATR, TP1 1.5R TP2 2.5R TP3 4R, confidence floor 75, time-stop in 1H candles, scenario_pair base+invalidation with second-order effect.\n\nPHASE 5 BACKTEST (mandatory, same setup same symbol, 1Y 1D + 3M 4H, fees 0.05%/side + 0.02% slip): trades, win_rate, avg_R, expectancy_R, profit_factor, Sharpe, maxDD%, tp1/2/3 hit rates. ACCEPT ALL: trades>=30, expectancy>0.15R, PF>=1.4, maxDD<=25%, tp1>=0.55 AND tp2>=0.35, no month >40% PnL. Else NO_TRADE naming gate. No backtest => NO_TRADE backtest_unavailable.\n\nPHASE 6 SIZING: risk=equity*0.01 (default equity 10000), size=risk/|entry-stop|, notional<=25% equity else shrink+flag. Halve in RISK_OFF.\n\nOUTPUT STRICT JSON ONLY with keys: asof_utc, macro, news_digest, sentiment, regime, derivatives, universeRanked, decision TRADE|NO_TRADE, no_trade_reason, signal{symbol,direction,setup_family,entry_zone,stop_loss,tp1,tp2,tp3,confidence_0_100,time_stop_1h_candles,invalidation,scenario_pair}, backtest{trades,win_rate,avg_R,expectancy_R,profit_factor,sharpe,max_drawdown_pct,tp1_hit_rate,tp2_hit_rate,tp3_hit_rate,notes}, sizing{equity_usd,risk_pct,risk_amount_usd,size_units,notional_usd,halved_for_risk_off,capped_by_concentration}, risk_notes, disclaimer. Output STRICT JSON only, no markdown.",
+            "maxIterations": 6
+          }
+        },
+        "id": "24e72d4c-80ab-458f-94a0-a2d1ed40965e",
+        "name": "Signal Agent",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          1344,
+          112
+        ],
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "jsonSchemaExample": "{\"decision\":\"TRADE\",\"no_trade_reason\":\"\",\"signal\":{\"symbol\":\"ETHUSDT\",\"direction\":\"LONG\",\"entry_zone\":[0,0],\"stop_loss\":0,\"tp1\":0,\"tp2\":0,\"tp3\":0,\"confidence_0_100\":0},\"backtest\":{\"trades\":0,\"expectancy_R\":0,\"profit_factor\":0,\"tp1_hit_rate\":0,\"tp2_hit_rate\":0}}"
+        },
+        "id": "8d36e13b-27fd-4770-96f8-56824e896c2d",
+        "name": "Signal JSON Parser",
+        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+        "typeVersion": 1.3,
+        "position": [
+          1488,
+          336
+        ],
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.output.decision }}",
+                "rightValue": "TRADE",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "9722f620-42b2-4644-b12b-d18a99e0d7ce",
+        "name": "Is TRADE?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          1696,
+          336
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $input.all(); const o = (items[0] && items[0].json && items[0].json.output) || items[0].json;\nconst fails = [];\nconst b = o.backtest || {};\nif ((b.trades||0) < 30) fails.push(\"trades<30\");\nif (!((b.expectancy_R||0) > 0.15)) fails.push(\"expectancy<=0.15R\");\nif (!((b.profit_factor||0) >= 1.4)) fails.push(\"PF<1.4\");\nif (!((b.tp1_hit_rate||0) >= 0.55)) fails.push(\"TP1<0.55\");\nif (!((b.tp2_hit_rate||0) >= 0.35)) fails.push(\"TP2<0.35\");\nconst s = o.signal || {};\nif (!((s.confidence_0_100||0) >= 75)) fails.push(\"conf<75\");\nreturn [{ json: Object.assign({}, o, { gate_check: { passed: fails.length===0, failed_gates: fails }, validated_at: new Date().toISOString() }) }];"
+        },
+        "id": "495abde3-b086-4c52-ac4f-fb5d6eb30503",
+        "name": "Validate Gates",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1568,
+          224
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// Log NO_TRADE v2 \u2014 echoes the FULL Quant output (not just reason) so Narrator has everything.\nconst q = $input.first().json; // Quant Engine output {output, quant_meta} passed through Is TRADE? FALSE branch\nconst o = q.output || q;\nreturn [{ json: { decision: 'NO_TRADE', reason: o.no_trade_reason || 'filtered', at: new Date().toISOString(),\n  signal: o.signal || {}, regime: o.regime || null, confluences: o.confluences || [], quant_meta: q.quant_meta || null } }];\n"
+        },
+        "id": "ced7f541-4f39-4200-ab16-dc968723ce33",
+        "name": "Log NO_TRADE",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1984,
+          80
+        ]
+      },
+      {
+        "parameters": {
+          "numberInputs": 5
+        },
+        "id": "f6968873-1e05-4d94-8a38-b813480de572",
+        "name": "Merge Inputs",
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          880,
+          512
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://api.coingecko.com/api/v3/global",
+          "options": {
+            "response": {},
+            "timeout": 30000
+          }
+        },
+        "id": "cdfec6a2-1bfd-405b-bf0c-f42cdec231d8",
+        "name": "Fetch CoinGecko Global",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          688,
+          960
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://api.binance.com/api/v3/klines",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "symbol",
+                "value": "={{ ($json.output && $json.output.signal && $json.output.signal.symbol) || ($json.signal && $json.signal.symbol) || \"BTCUSDT\" }}"
+              },
+              {
+                "name": "interval",
+                "value": "1d"
+              },
+              {
+                "name": "limit",
+                "value": "400"
+              }
+            ]
+          },
+          "options": {
+            "response": {},
+            "timeout": 30000
+          }
+        },
+        "id": "f39e70dc-db91-44c8-a9d0-38c9b12a8755",
+        "name": "Fetch 1D History",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          1792,
+          224
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// Backtest Engine \u2014 deterministic, runs in n8n Code node (runOnceForAllItems, JS).\n// Input: $input.all()[0].json = { klines_1d: [[ot,o,h,l,c,v,...]...] (oldest-first, >=60),\n//   signal: {direction, entry_zone:[lo,hi], stop_loss, tp1, tp2, tp3} }\n// Simulates the EXACT setup trigger: pullback entry when close crosses back through\n// entry_zone after having been outside it; stop/TP resolution candle-by-candle\n// (intra-candle: stop checked first = conservative). Fees 5bps/side + 2bps slip.\n// Output: {json:{backtest:{...}, backtest_trades:[...]}} \u2014 numbers only, no invention:\n// every figure derives from klines_1d.\nconst vg = $('Validate Gates').first().json;\nconst K = $input.all().map(function(i){ return i.json; }).filter(function(x){ return Array.isArray(x); });\nconst inp = { klines_1d: K, signal: (vg.output && vg.output.signal) || vg.signal || {}, symbol: ((vg.output && vg.output.signal && vg.output.signal.symbol) || (vg.signal && vg.signal.symbol) || 'BTCUSDT') };\n\nconst S = inp.signal || {};\nconst FEE = 0.0005, SLIP = 0.0002;\nfunction R_mult(entry, exit, stop, dir){\n  const risk = dir === 'LONG' ? (entry - stop) : (stop - entry);\n  if(!(risk > 0)) return null;\n  const pnl = dir === 'LONG' ? (exit - entry) : (entry - exit);\n  return pnl / risk;\n}\nconst trades = [];\nif(K.length >= 60 && S.entry_zone && S.stop_loss){\n  const lo = Math.min(S.entry_zone[0], S.entry_zone[1]);\n  const hi = Math.max(S.entry_zone[0], S.entry_zone[1]);\n  const stop = S.stop_loss, dir = S.direction || 'LONG';\n  let armed = false, entry = null, entryIdx = -1;\n  // warmup: need SMA20 context -> start at idx 20\n  for(let i = 20; i < K.length; i++){\n    const o = parseFloat(K[i][1]), h = parseFloat(K[i][2]),\n          l = parseFloat(K[i][3]), c = parseFloat(K[i][4]);\n    if(entry === null){\n      // trigger: close enters zone from outside (pullback fill), needs prior bar outside\n      const pc = parseFloat(K[i-1][4]);\n      const wasOut = pc < lo || pc > hi;\n      const inZone = c >= lo && c <= hi;\n      if(wasOut && inZone){ entry = c * (1 + (dir==='LONG'?SLIP:-SLIP)); entryIdx = i; }\n      continue;\n    }\n    // resolve open trade candle-by-candle, stop first (conservative)\n    const stopHit = dir === 'LONG' ? (l <= stop) : (h >= stop);\n    const px = [S.tp1, S.tp2, S.tp3].map(function(t){\n      if(t === null || t === undefined) return null;\n      return dir === 'LONG' ? (h >= t) : (l <= t);\n    });\n    if(stopHit){\n      const x = stop * (1 - (dir==='LONG'?FEE+SLIP:-(FEE+SLIP)));\n      trades.push({entry_idx: entryIdx, exit_idx: i, exit: 'STOP', R: R_mult(entry, x, stop, dir), tp_hit: [false,false,false]});\n      entry = null; continue;\n    }\n    const hitIdx = px.findIndex(function(v){ return v; });\n    if(hitIdx === -1) continue;\n    // exit at FIRST touched target for R accounting; record all touched for hit-rates\n    const tval = [S.tp1, S.tp2, S.tp3][hitIdx];\n    const x = tval * (1 - (dir==='LONG'?FEE:-FEE));\n    trades.push({entry_idx: entryIdx, exit_idx: i, exit: 'TP'+(hitIdx+1), R: R_mult(entry, x, stop, dir), tp_hit: px.map(function(v){ return !!v; })});\n    entry = null;\n  }\n}\nfunction stats(tr){\n  const n = tr.length;\n  if(!n) return {trades:0,win_rate:0,avg_R:0,expectancy_R:0,profit_factor:0,sharpe:0,max_drawdown_pct:0,tp1_hit_rate:0,tp2_hit_rate:0,tp3_hit_rate:0,notes:'no-sampled-trades'};\n  const Rs = tr.map(function(t){ return t.R; });\n  let sum = 0, wins = 0, gp = 0, gl = 0;\n  for(const r of Rs){ sum += r; if(r > 0){ wins++; gp += r; } else gl -= r; }\n  const mean = sum / n;\n  let sd = 0; for(const r of Rs) sd += (r-mean)*(r-mean); sd = Math.sqrt(sd/n) || 1e-9;\n  let peak = 0, eq = 0, mdd = 0;\n  for(const r of Rs){ eq += r; if(eq > peak) peak = eq; const dd = peak - eq; if(dd > mdd) mdd = dd; }\n  // monthly concentration: bucket by exit_idx month approx (30 candles)\n  const buckets = {};\n  for(const t of tr){ const m = Math.floor(t.exit_idx/30); buckets[m] = (buckets[m]||0) + t.R; }\n  let tot = sum, worst_share = 0;\n  for(const k in buckets){ const s = tot !== 0 ? Math.abs(buckets[k]/tot) : 0; if(s > worst_share) worst_share = s; }\n  return {\n    trades: n,\n    win_rate: Math.round(wins/n*1000)/1000,\n    avg_R: Math.round(mean*1000)/1000,\n    expectancy_R: Math.round(mean*1000)/1000,\n    profit_factor: gl > 0 ? Math.round(gp/gl*100)/100 : 999,\n    sharpe: Math.round(mean/sd*Math.sqrt(n)*100)/100,\n    max_drawdown_pct: Math.round(mdd*100)/100,\n    tp1_hit_rate: Math.round(tr.filter(function(t){return t.tp_hit[0];}).length/n*1000)/1000,\n    tp2_hit_rate: Math.round(tr.filter(function(t){return t.tp_hit[1];}).length/n*1000)/1000,\n    tp3_hit_rate: Math.round(tr.filter(function(t){return t.tp_hit[2];}).length/n*1000)/1000,\n    worst_month_pnl_share: Math.round(worst_share*1000)/1000,\n    fees_bps_per_side: 5,\n    notes: 'deterministic-replay|stop-first-intrabar|fees5bps+slip2bps'\n  };\n}\nconst bt = stats(trades);\nreturn [{ json: { backtest: bt, backtest_trades: trades.slice(-60), backtest_meta: { candles: K.length, symbol: inp.symbol || null }, signal_echo: S, decision_echo: 'TRADE' } }];\n",
+          "mode": "runOnceForAllItems",
+          "language": "javaScript"
+        },
+        "id": "6d3f515a-5881-4630-ad4e-4fb0660d9a29",
+        "name": "Backtest Engine",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1984,
+          224
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// Build Telegram Payload v3 (FA) \u2014 same inputs, Persian message, single-line safe.\n// Reads signal context from Validate Gates (TRADE branch) with fallback to Parse LLM JSON,\n// backtest-real from $input (Backtest Engine output on TRADE branch).\nlet vg = null;\ntry { vg = $('Validate Gates').first().json; } catch(e) {}\nlet llm = null;\ntry { llm = $('Parse LLM JSON').first().json; } catch(e) {}\nconst cur = $input.first().json;\nconst o = (vg && (vg.output || vg.decision)) ? (vg.output ? vg : { output: vg }) : (llm && llm.output ? llm : { output: cur.output || cur });\nconst out = o.output || o;\nconst s = out.signal || {};\nconst bReal = cur.backtest || null;\nconst bEst = out.backtest || {};\nfunction n(x, d){ return (x === null || x === undefined || x === '') ? d : x; }\nfunction faDir(d){ if(d === 'LONG') return '\u062e\u0631\u06cc\u062f (\u0644\u0627\u0646\u06af)'; if(d === 'SHORT') return '\u0641\u0631\u0648\u0634 (\u0634\u0648\u0631\u062a)'; return '\u2014'; }\nconst decision = out.decision || cur.decision || 'UNKNOWN';\nconst L = [];\nif(decision === 'TRADE'){\n  L.push('\u2705 \u0633\u06cc\u06af\u0646\u0627\u0644 \u06a9\u0631\u06cc\u067e\u062a\u0648 \u2014 \u0645\u0639\u0627\u0645\u0644\u0647');\n  L.push('\u0627\u0631\u0632: ' + (s.symbol || '\u061f') + ' | \u062c\u0647\u062a: ' + faDir(s.direction));\n  if(s.setup_family) L.push('\u0633\u062a\u0627\u067e: ' + (s.setup_family === 'TREND_CONTINUATION' ? '\u0627\u062f\u0627\u0645\u0647 \u0631\u0648\u0646\u062f' : (s.setup_family === 'RANGE_FADE' ? '\u0628\u0631\u06af\u0634\u062a \u0627\u0632 \u0633\u0642\u0641/\u06a9\u0641 \u0631\u0646\u062c' : s.setup_family)));\n  L.push('\u0627\u0637\u0645\u06cc\u0646\u0627\u0646: ' + n(s.confidence_0_100, 0) + ' \u0627\u0632 \u06f1\u06f0\u06f0');\n  L.push('\u0648\u0631\u0648\u062f: ' + JSON.stringify(s.entry_zone || []) + ' | \u062d\u062f \u0636\u0631\u0631: ' + n(s.stop_loss, '\u061f'));\n  L.push('\u062a\u0627\u0631\u06af\u062a\u200c\u0647\u0627: ' + n(s.tp1,'\u061f') + ' / ' + n(s.tp2,'\u061f') + ' / ' + n(s.tp3,'\u061f'));\n} else {\n  L.push('\u26d4 \u0628\u062f\u0648\u0646 \u0645\u0639\u0627\u0645\u0644\u0647');\n  L.push('\u062f\u0644\u06cc\u0644: ' + (out.no_trade_reason || cur.reason || '\u0634\u0631\u0627\u06cc\u0637 \u0644\u0627\u0632\u0645 \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u0628\u0648\u062f'));\n}\nif(bReal && bReal.trades){\n  L.push('\u2014 \u0628\u06a9\u200c\u062a\u0633\u062a \u0648\u0627\u0642\u0639\u06cc (\u0628\u0627\u0632\u067e\u062e\u0634 \u0642\u0637\u0639\u06cc\u060c \u06a9\u0627\u0631\u0645\u0632\u062f \u0648 \u0644\u063a\u0632\u0634 \u0644\u062d\u0627\u0638 \u0634\u062f\u0647) \u2014');\n  L.push('\u062a\u0639\u062f\u0627\u062f: ' + n(bReal.trades,0) + ' | \u0627\u0645\u06cc\u062f \u0631\u06cc\u0627\u0636\u06cc: ' + n(bReal.expectancy_R,0) + 'R | \u0641\u0627\u06a9\u062a\u0648\u0631 \u0633\u0648\u062f: ' + n(bReal.profit_factor,0));\n  L.push('\u0628\u0631\u062e\u0648\u0631\u062f \u062a\u0627\u0631\u06af\u062a \u06f1: ' + n(bReal.tp1_hit_rate,0) + ' | \u062a\u0627\u0631\u06af\u062a \u06f2: ' + n(bReal.tp2_hit_rate,0) + ' | \u062a\u0627\u0631\u06af\u062a \u06f3: ' + n(bReal.tp3_hit_rate,0));\n  L.push('\u062d\u062f\u0627\u06a9\u062b\u0631 \u0627\u0641\u062a: ' + n(bReal.max_drawdown_pct,0) + 'R');\n} else {\n  L.push('\u0628\u06a9\u200c\u062a\u0633\u062a (\u062a\u062e\u0645\u06cc\u0646\u06cc \u0645\u062f\u0644): \u062a\u0639\u062f\u0627\u062f=' + n(bEst.trades,0) + ' \u0627\u0645\u06cc\u062f=' + n(bEst.expectancy_R,0) + 'R \u0628\u0631\u062e\u0648\u0631\u062f \u062a\u0627\u0631\u06af\u062a\u06f1=' + n(bEst.tp1_hit_rate,0));\n}\nif(s.invalidation) L.push('\u0627\u0628\u0637\u0627\u0644: ' + s.invalidation);\nL.push('\u0641\u0642\u0637 \u062a\u062d\u0644\u06cc\u0644 \u0627\u0633\u062a\u060c \u062a\u0648\u0635\u06cc\u0647 \u0645\u0627\u0644\u06cc \u0646\u06cc\u0633\u062a');\nreturn [{ json: { chat_id: '6643216800', text: L.join('\\n') } }];\n"
+        },
+        "id": "37bbdf04-994e-4ad8-a6c0-a0523107e333",
+        "name": "Build Telegram Payload",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2192,
+          432
+        ],
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.telegram.org/bot8764733374:AAGUZCPajEpsyO0_v_lQYqEofBnORKC2W2M/sendMessage",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\"chat_id\": \"6643216800\", \"text\": \"{{ $json.text }}\"}",
+          "options": {
+            "response": {},
+            "timeout": 30000
+          }
+        },
+        "id": "9adbfe1d-3994-45db-9678-86ab2af2e64c",
+        "name": "Telegram HTTP Sender",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          2384,
+          432
+        ]
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "mode": "id",
+            "value": "claude-fable-5-1"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "id": "d8412c1b-46de-4e75-9647-f6b1b86240c2",
+        "name": "Fable Model",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          1360,
+          528
+        ],
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "jsCode": "// LLM Caller \u2014 replaces AI Agent + Gemini + Parser (Gateway blocked custom models).\n// Calls 9router OpenAI-compatible endpoint with your key, parses strict JSON itself.\n// Input: Compute Indicators output. Output: {json:{output:{decision,signal,backtest,...}}}\nconst src = $input.first().json;\nconst F = src.features || {};\nconst SYS = `ROLE: macro-aware crypto quant-research agent inside a scheduled n8n workflow. Fuse macro, news, sentiment, derivatives, technicals into ONE low-risk signal or justified NO_TRADE. Conservative: rejecting weak setups is success. Analysis only, not financial advice. Never invent numbers; every number comes from workflow input.\nUNIVERSE: BTCUSDT ETHUSDT SOLUSDT BNBUSDT XRPUSDT DOGEUSDT ADAUSDT AVAXUSDT LINKUSDT ARBUSDT (Binance USDT).\nTIMEFRAMES: 1D trend filter + 4H setup + 1H trigger. Horizon intraday-to-days. LONG and SHORT allowed. Risk per trade 1%.\nMACRO+NEWS GATE: risk-off if >=2 hold: SPX day<-1.5%, VIX>30 or VIX day>+20%, DXY up AND gold up, US10Y up >10bps with equities down. Coin killers veto coin; market shock => NO_TRADE. event_blackout => NO_TRADE. Headlines older than 24h carry zero weight.\nREGIME 0-100: BTC trend 25, alt breadth 20, dominance 15, funding 15, drawdown+vol 15, momentum 10. Zones 80+/40-79/0-39. Sentiment overlay veto+tax only: >=81 veto LONGs, <=20 veto SHORTs.\nTECHNICALS per symbol 4H confirmed by 1D timed 1H: SMA stack, EMA, ADX>=20 trend, RSI, Stoch, MACD, Bollinger, ATR, relvol>1.2 breakouts, 20-bar H/L, S/R. OI two-factor read. Movers >+15% no chase.\nSETUPS: A TREND-CONTINUATION, B RANGE-FADE (ADX<20). Min 6 confluences.\nSIGNAL: direction, entry_zone max 0.5xATR, stop beyond structure+0.25xATR, TP1 1.5R TP2 2.5R TP3 4R, confidence floor 75, time-stop, scenario_pair.\nBACKTEST (estimate honestly from snapshot + state if not validated downstream): trades, win_rate, avg_R, expectancy_R, profit_factor, Sharpe, tp1/2/3 hit rates. If unsure, set trades<30 so gate forces NO_TRADE \u2014 never inflate.\nSIZING: risk=equity*0.01 (default 10000).\nOUTPUT STRICT JSON ONLY, EXACT KEYS: {\"decision\":\"TRADE|NO_TRADE\",\"no_trade_reason\":\"\",\"signal\":{\"symbol\":\"\",\"direction\":\"LONG|SHORT|NEUTRAL\",\"setup_family\":\"\",\"entry_zone\":[0,0],\"stop_loss\":0,\"tp1\":0,\"tp2\":0,\"tp3\":0,\"confidence_0_100\":0,\"time_stop_1h_candles\":0,\"invalidation\":\"\",\"scenario_pair\":{\"base_path\":\"\",\"invalidation_path_second_order\":\"\"}},\"backtest\":{\"trades\":0,\"win_rate\":0,\"avg_R\":0,\"expectancy_R\":0,\"profit_factor\":0,\"sharpe\":0,\"max_drawdown_pct\":0,\"tp1_hit_rate\":0,\"tp2_hit_rate\":0,\"tp3_hit_rate\":0,\"notes\":\"\"}}`;\nconst SNAP = 'MARKET SNAPSHOT: ' + JSON.stringify({ computed_at: F.computed_at, closes: F.closes, sma20: F.sma20, sma50: F.sma50, sma200: F.sma200, ema12: F.ema12, ema26: F.ema26, rsi14: F.rsi14, atr14: F.atr14, atr_pct: F.atr_pct, stoch: F.stoch, macd: F.macd, bb: F.bb, high20: F.high20, low20: F.low20, relvol: F.relvol, chg7: F.chg7, chg30: F.chg30, ticker: (src.ticker||[]).map(function(t){ return {s:t.symbol, p:parseFloat(t.lastPrice), chg:t.priceChangePercent}; }), funding: src.funding ? src.funding.lastFundingRate : null, fear_greed: src.fear_greed, fear_greed_7d: src.fear_greed_7d, btc_dominance: src.btc_dominance, mcap_chg24: src.mcap_chg24 });\nconst body = { model: 'claude-fable-5-1', messages: [{ role: 'system', content: SYS }, { role: 'user', content: SNAP + '\\n\\nRespond with STRICT JSON only, no markdown, no commentary.' }], temperature: 0.2, max_tokens: 1500 };\nconst res = await $helpers.httpRequest({ method: 'POST', url: 'https://9router-production-f1f0.up.railway.app/v1/chat/completions', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer sk-8244600ee0899f59-e7vg87-a807a409' }, body: body, returnFullResponse: false });\nlet txt = '';\ntry {\n  const ch = res.choices && res.choices[0];\n  txt = (ch && ch.message && ch.message.content) || '';\n} catch(e) { txt = ''; }\nlet parsed = null;\ntry {\n  const m = txt.match(/\\{[\\s\\S]*\\}/);\n  parsed = JSON.parse(m ? m[0] : txt);\n} catch(e) { parsed = null; }\nif(!parsed || !parsed.decision){\n  return [{ json: { output: { decision: 'NO_TRADE', no_trade_reason: 'llm-parse-failed: ' + String(txt).slice(0,300), signal: { symbol:'NONE', direction:'NEUTRAL', entry_zone:[0,0], stop_loss:0, tp1:0, tp2:0, tp3:0, confidence_0_100:0 }, backtest: { trades:0, expectancy_R:0, profit_factor:0, tp1_hit_rate:0, tp2_hit_rate:0 } } } }];\n}\nreturn [{ json: { output: parsed } }];\n"
+        },
+        "id": "9286a1c1-4c21-4133-8ada-f4d196b8c93c",
+        "name": "LLM Caller",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1344,
+          304
+        ],
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://9router-production-f1f0.up.railway.app/v1/chat/completions",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Authorization",
+                "value": "Bearer sk-8244600ee0899f59-e7vg87-a807a409"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json.llm_body }}",
+          "options": {
+            "response": {},
+            "timeout": 120000
+          }
+        },
+        "id": "c48576bd-9ad9-4b19-b1ec-dbe7c98c9e34",
+        "name": "LLM HTTP Call",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          1344,
+          480
+        ],
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "jsCode": "const b=$input.first().json;\nlet txt='';\ntry{ txt=b.choices[0].message.content||''; }catch(e){}\nlet p=null;\ntry{ const m=String(txt).match(/\\{[\\s\\S]*\\}/); p=JSON.parse(m?m[0]:txt); }catch(e){}\nif(!p||!p.decision){ return [{json:{output:{decision:'NO_TRADE',no_trade_reason:'llm-parse-failed: '+String(txt).slice(0,300),signal:{symbol:'NONE',direction:'NEUTRAL',entry_zone:[0,0],stop_loss:0,tp1:0,tp2:0,tp3:0,confidence_0_100:0},backtest:{trades:0,expectancy_R:0,profit_factor:0,tp1_hit_rate:0,tp2_hit_rate:0}}}}]; }\nreturn [{json:{output:p}}];"
+        },
+        "id": "a133932d-3510-411f-a69f-359e14322f12",
+        "name": "Parse LLM JSON",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1552,
+          480
+        ],
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "jsCode": "// Build LLM request body in a Code node (safe string building, no expression quoting hell).\n// Input: Compute Indicators output. Output: {json:{llm_body:{...}, snapshot_dbg:'...'}}\nconst src = $input.first().json;\nconst F = src.features || {};\nconst SYS = 'ROLE: macro-aware crypto quant agent in scheduled n8n workflow. Fuse macro, news, sentiment, derivatives, technicals into ONE low-risk signal or justified NO_TRADE. Conservative: rejecting weak setups is success. Analysis only, not financial advice. Never invent numbers; every number comes from workflow input. '\n+ 'UNIVERSE: BTCUSDT ETHUSDT SOLUSDT BNBUSDT XRPUSDT DOGEUSDT ADAUSDT AVAXUSDT LINKUSDT ARBUSDT (Binance USDT). '\n+ 'TIMEFRAMES: 1D trend filter + 4H setup + 1H trigger. Horizon intraday-to-days. LONG and SHORT allowed. Risk per trade 1 percent. '\n+ 'GATE: risk-off if 2+ hold: SPX<-1.5pct, VIX>30 or VIX day>+20pct, DXY up AND gold up, US10Y up >10bps with equities down. Coin killers veto coin; market shock => NO_TRADE. event_blackout => NO_TRADE. Headlines older than 24h carry zero weight. '\n+ 'REGIME 0-100: BTC trend 25, alt breadth 20, dominance 15, funding 15, drawdown+vol 15, momentum 10. Zones 80+/40-79/0-39. Sentiment veto+tax only: >=81 veto LONGs, <=20 veto SHORTs. '\n+ 'TECHNICALS per symbol 4H confirmed by 1D timed 1H: SMA stack, EMA, ADX>=20 trend, RSI, Stoch, MACD, Bollinger, ATR, relvol>1.2 breakouts, 20-bar H/L, S/R. OI two-factor read. Movers >+15pct no chase. '\n+ 'SETUPS: A TREND-CONTINUATION, B RANGE-FADE (ADX<20). Min 6 confluences. '\n+ 'SIGNAL: direction, entry_zone max 0.5xATR, stop beyond structure+0.25xATR, TP1 1.5R TP2 2.5R TP3 4R, confidence floor 75, time-stop, scenario_pair. '\n+ 'BACKTEST estimate honestly from snapshot: trades, win_rate, avg_R, expectancy_R, profit_factor, Sharpe, tp1/2/3 hit rates. If unsure set trades<30 so gate forces NO_TRADE. Never inflate. '\n+ 'SIZING: risk=equity*0.01 default 10000. '\n+ 'OUTPUT STRICT JSON ONLY EXACT KEYS: {\"decision\":\"TRADE|NO_TRADE\",\"no_trade_reason\":\"\",\"signal\":{\"symbol\":\"\",\"direction\":\"\",\"setup_family\":\"\",\"entry_zone\":[0,0],\"stop_loss\":0,\"tp1\":0,\"tp2\":0,\"tp3\":0,\"confidence_0_100\":0,\"time_stop_1h_candles\":0,\"invalidation\":\"\",\"scenario_pair\":{\"base_path\":\"\",\"invalidation_path_second_order\":\"\"}},\"backtest\":{\"trades\":0,\"win_rate\":0,\"avg_R\":0,\"expectancy_R\":0,\"profit_factor\":0,\"sharpe\":0,\"max_drawdown_pct\":0,\"tp1_hit_rate\":0,\"tp2_hit_rate\":0,\"tp3_hit_rate\":0,\"notes\":\"\"}}';\nconst snap = { computed_at: F.computed_at, closes: F.closes, sma20: F.sma20, sma50: F.sma50, sma200: F.sma200, ema12: F.ema12, ema26: F.ema26, rsi14: F.rsi14, atr14: F.atr14, atr_pct: F.atr_pct, stoch: F.stoch, macd: F.macd, bb: F.bb, high20: F.high20, low20: F.low20, relvol: F.relvol, chg7: F.chg7, chg30: F.chg30,\n  ticker: (src.ticker||[]).map(function(t){ return { s: t.symbol, p: t.lastPrice, chg: t.priceChangePercent }; }),\n  funding: src.funding ? src.funding.lastFundingRate : null, fear_greed: src.fear_greed, fear_greed_7d: src.fear_greed_7d, btc_dominance: src.btc_dominance, mcap_chg24: src.mcap_chg24 };\nconst body = { model: 'claude-fable-5-1', temperature: 0.2, max_tokens: 1500,\n  messages: [ { role: 'system', content: SYS }, { role: 'user', content: 'MARKET SNAPSHOT: ' + JSON.stringify(snap) + ' Respond with STRICT JSON only, no markdown, no commentary.' } ] };\nreturn [{ json: { llm_body: body } }];\n"
+        },
+        "id": "478d8d89-c8be-48db-986b-99bd4ee0ed63",
+        "name": "Build LLM Body",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1344,
+          640
+        ],
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "jsCode": "\nconst t = $input.first().json;\nlet s = String(t.text || '');\ns = s.replace(/[\\u0000-\\u001F\\u007F-\\u009F]/g, ' ').replace(/\\s+/g, ' ').trim().slice(0, 3500);\nreturn [{ json: { chat_id: '6643216800', text: s } }];\n"
+        },
+        "id": "ad0b7f81-0ce4-417d-abdb-c72c0483a55a",
+        "name": "Sanitize Telegram Text",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2288,
+          432
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// QUANT ENGINE v2 MULTI \u2014 evaluates BTC + ETH + SOL + BNB, picks the single best setup.\n// Input: Compute v2 output {features_multi{SYM:feat}, funds_multi{SYM:fund}, ticker, fear_greed, btc_dominance, mcap_chg24}.\n// Scoring per symbol: confluences passed (need >=6 of 8) + confidence; pick highest confidence,\n// tie-break: higher confluence count, then larger |distance to SMA20|/ATR (cleaner pullback).\n// Output shape identical to v1: {output:{decision,signal(symbol set!),regime,confluences of WINNER,backtest_est}, quant_meta}\n// Regime uses BTC features (unchanged).\nconst src = $input.first().json;\nconst FM = src.features_multi || { BTCUSDT: src.features };\nconst FUNDS = src.funds_multi || { BTCUSDT: src.funding };\nconst T = src.ticker || [];\nconst FG = (src.fear_greed === null || src.fear_greed === undefined) ? 50 : src.fear_greed;\nconst DOM = src.btc_dominance || 0;\nconst SYMS = ['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT'];\nconst F0 = FM['BTCUSDT'] || {};\nif(!F0 || F0.sma20 === null || F0.sma20 === undefined || F0.rsi14 === null || F0.rsi14 === undefined){\n  return [{ json: { output: { decision: 'NO_TRADE', no_trade_reason: 'missing-indicators: BTC features null; cannot score regime.', signal: { symbol:'NONE',direction:'NEUTRAL',setup_family:'',entry_zone:[0,0],stop_loss:0,tp1:0,tp2:0,tp3:0,confidence_0_100:0,time_stop_1h_candles:0,invalidation:'',scenario_pair:{base_path:'',invalidation_path_second_order:''}}, backtest_est: { trades:0,expectancy_R:null,profit_factor:null,tp1_hit_rate:null,tp2_hit_rate:null,must_validate:true }, regime: { score:0,zone:'NEUTRAL',drivers:[] }, confluences: [] }, quant_meta: { engine:'quant-v2-multi', at:new Date().toISOString() } } }];\n}\n// regime (BTC-based, same weights as v1)\nfunction regimeScore(){\n  const lastC = (F0.closes && F0.closes.length) ? F0.closes[F0.closes.length-1] : null;\n  let btcTrend = 50;\n  if(lastC && F0.sma50 && F0.sma200){\n    if(lastC > F0.sma50 && F0.sma50 > F0.sma200) btcTrend = 100;\n    else if(lastC > F0.sma200) btcTrend = 60;\n    else if(lastC > F0.sma50) btcTrend = 40;\n    else btcTrend = 10;\n  }\n  let pos=0, tot=0;\n  for(const t of T){ const c=parseFloat(t.priceChangePercent); if(!isNaN(c)){ tot++; if(c>0) pos++; } }\n  const breadth = tot ? Math.round(pos/tot*100) : 50;\n  let domScore = 50;\n  if(DOM >= 55 && lastC && F0.sma200 && lastC > F0.sma200) domScore = 60;\n  else if(DOM >= 60) domScore = 30;\n  else if(DOM < 50) domScore = 65;\n  const f0 = (FUNDS['BTCUSDT'] && parseFloat(FUNDS['BTCUSDT'].lastFundingRate)) || 0;\n  let fundScore = 80;\n  if(Math.abs(f0) > 0.0005) fundScore = 30;\n  else if(Math.abs(f0) > 0.0002) fundScore = 60;\n  let dvScore = 60;\n  if(F0.bb && F0.bb.pos === 'above-upper') dvScore = 35;\n  else if(F0.bb && F0.bb.pos === 'below-lower') dvScore = 40;\n  if(F0.atr_pct && F0.atr_pct > 3) dvScore = Math.min(dvScore, 40);\n  let momScore = 50;\n  if(F0.chg7 !== null && F0.chg7 !== undefined){ momScore = F0.chg7 > 5 ? 85 : (F0.chg7 > 0 ? 60 : (F0.chg7 > -5 ? 40 : 15)); }\n  const score = Math.round(btcTrend*0.25 + breadth*0.20 + domScore*0.15 + fundScore*0.15 + dvScore*0.15 + momScore*0.10);\n  return { score: score, zone: score >= 80 ? 'RISK_ON' : (score >= 40 ? 'NEUTRAL' : 'RISK_OFF'),\n    drivers: ['btcTrend='+btcTrend,'breadth='+breadth+'%','dom='+DOM,'fund='+f0,'chg7='+F0.chg7], momScore: momScore };\n}\nconst REG = regimeScore();\nconst comp = Math.round(FG*0.4 + 50*0.4 + REG.momScore*0.2);\nfunction evalSym(sym){\n  const F = FM[sym];\n  if(!F || F.error || F.sma20 === null || F.sma20 === undefined || F.rsi14 === null || F.rsi14 === undefined)\n    return { sym: sym, ok: false, reason: 'missing-features' };\n  const fund = (FUNDS[sym] && parseFloat(FUNDS[sym].lastFundingRate)) || 0;\n  const lastC = F.closes[F.closes.length-1];\n  const rsi = F.rsi14, sma20 = F.sma20, sma50 = F.sma50, atr = F.atr14;\n  const uptrend = lastC && sma20 && sma50 && lastC > sma20 && sma20 > sma50;\n  const downtrend = lastC && sma20 && sma50 && lastC < sma20 && sma20 < sma50;\n  const rsiSane = rsi !== null && rsi < 78 && rsi > 22;\n  const bbSane = !(F.bb && (F.bb.pos === 'above-upper' || F.bb.pos === 'below-lower'));\n  let dir = null, family = '';\n  const pullLong = uptrend && rsi < 60 && rsi > 40;\n  const pullShort = downtrend && rsi < 60 && rsi > 40;\n  const rLong = rsiSane && bbSane && !uptrend && !downtrend && F.bb && F.bb.pos === 'lower-half' && rsi < 35;\n  const rShort = rsiSane && bbSane && !uptrend && !downtrend && F.bb && F.bb.pos === 'upper-half' && rsi > 65;\n  const adxOk = F.adx14 !== null && F.adx14 !== undefined;\n  const adxV = adxOk ? F.adx14 : null;\n  const trendAdxOk = adxOk && adxV >= 20;\n  const rangeAdxOk = adxOk && adxV < 20;\n  if(pullLong && trendAdxOk){ dir='LONG'; family='TREND_CONTINUATION'; }\n  else if(pullShort && trendAdxOk){ dir='SHORT'; family='TREND_CONTINUATION'; }\n  else if(rLong && rangeAdxOk){ dir='LONG'; family='RANGE_FADE'; }\n  else if(rShort && rangeAdxOk){ dir='SHORT'; family='RANGE_FADE'; }\n  const C = [];\n  function c(n,ok,d){ C.push({name:n,pass:!!ok,detail:d||''}); }\n  c('regime-not-risk-off', REG.zone !== 'RISK_OFF', REG.zone);\n  c('sentiment-no-veto', dir ? !((dir==='LONG'&&comp>=81)||(dir==='SHORT'&&comp<=20)) : true, 'composite='+comp);\n  c('trend-stack', !!(uptrend||downtrend)||family==='RANGE_FADE', uptrend?'up':(downtrend?'down':'range'));\n  c('rsi-not-extreme', rsiSane, 'rsi='+(rsi!==null?rsi.toFixed(1):'?'));\n  c('bollinger-not-extended', bbSane, F.bb?F.bb.pos:'?');\n  c('volume-ok', F.relvol===null||F.relvol>0.7, 'relvol='+F.relvol);\n  c('funding-sane', Math.abs(fund)<=0.0005, 'fund='+fund);\n  c('setup-present', !!dir, family||'none');\n  c('adx-regime-fit', dir ? (family==='TREND_CONTINUATION' ? trendAdxOk : rangeAdxOk) : (adxOk && adxV>=20), 'adx='+(adxV!==null?adxV:'?'));\n  const passed = C.filter(function(x){return x.pass;}).length;\n  if(!dir) return { sym: sym, ok: false, reason: 'no-setup', conf: C, passed: passed, F: F };\n  const hi20=F.high20, lo20=F.low20;\n  let entry, stop;\n  if(dir==='LONG'){ entry=Math.min(lastC,sma20); stop=Math.min(lo20,entry-atr*1.0)-atr*0.25; }\n  else { entry=Math.max(lastC,sma20); stop=Math.max(hi20,entry+atr*1.0)+atr*0.25; }\n  const R=Math.abs(entry-stop);\n  if(!(R>0)) return { sym: sym, ok:false, reason:'degenerate', conf:C, passed:passed, F:F };\n  const tax = dir==='LONG' ? ((comp>=61&&comp<=80)?5:0) : ((comp>=21&&comp<=40)?5:0);\n  let cfd = 70 + Math.min(12,passed) - tax;\n  if(REG.zone==='RISK_OFF') cfd -= 10;\n  cfd = Math.max(0,Math.min(100,Math.round(cfd)));\n  const mid=entry;\n  function rr(m){ return dir==='LONG'?mid+R*m:mid-R*m; }\n  const pullQ = atr>0 ? Math.abs(lastC-sma20)/atr : 0;\n  return { sym: sym, ok: true, dir: dir, family: family, conf: cfd, passed: passed, C: C, F: F,\n    signal: { symbol: sym, direction: dir, setup_family: family,\n      entry_zone: [Math.round((mid-atr*0.25)*100)/100, Math.round((mid+atr*0.25)*100)/100],\n      stop_loss: Math.round(stop*100)/100, tp1: Math.round(rr(1.5)*100)/100, tp2: Math.round(rr(2.5)*100)/100, tp3: Math.round(rr(4)*100)/100,\n      confidence_0_100: cfd, time_stop_1h_candles: 24,\n      invalidation: family==='TREND_CONTINUATION' ? ('4H close beyond stop ('+(Math.round(stop*100)/100)+') or loss of SMA50 structure.') : '4H close outside range edge; range invalid.',\n      scenario_pair: { base_path: dir+' holds value, TP1 1.5R first.', invalidation_path_second_order: 'If BTC breaks down, alt bid evaporates; stand down.' } },\n    pullQ: pullQ };\n}\nconst results = SYMS.map(evalSym);\nconst cands = results.filter(function(r){ return r.ok && r.conf >= 75 && r.passed >= 6; });\ncands.sort(function(a,b){ return (b.conf-a.conf) || (b.passed-a.passed) || (b.pullQ-a.pullQ); });\nfunction blankSig(){ return { symbol:'NONE',direction:'NEUTRAL',setup_family:'',entry_zone:[0,0],stop_loss:0,tp1:0,tp2:0,tp3:0,confidence_0_100:0,time_stop_1h_candles:0,invalidation:'',scenario_pair:{base_path:'',invalidation_path_second_order:''}}; }\nif(!cands.length){\n  const det = results.map(function(r){ return r.sym+':'+(r.ok?('conf='+r.conf+'/pass='+r.passed):r.reason); }).join(' | ');\n  return [{ json: { output: { decision:'NO_TRADE', no_trade_reason:'no-qualifier-4sym: '+det, signal:blankSig(),\n    backtest_est:{trades:0,expectancy_R:null,profit_factor:null,tp1_hit_rate:null,tp2_hit_rate:null,must_validate:true},\n    regime:{score:REG.score,zone:REG.zone,drivers:REG.drivers}, confluences:(results[0]&&results[0].conf)||[] },\n    quant_meta:{engine:'quant-v2-multi',at:new Date().toISOString()} } }];\n}\nconst W = cands[0];\nreturn [{ json: { output: { decision:'TRADE', no_trade_reason:'', signal:W.signal,\n  backtest_est:{trades:0,expectancy_R:null,profit_factor:null,tp1_hit_rate:null,tp2_hit_rate:null,must_validate:true},\n  regime:{score:REG.score,zone:REG.zone,drivers:REG.drivers}, confluences:W.C,\n  ranked: results.map(function(r){ return {sym:r.sym, ok:r.ok, conf:(r.conf||0), passed:(r.passed||0)}; }) },\n  quant_meta:{engine:'quant-v2-multi',at:new Date().toISOString(),winner:W.sym}, confluence_passed:W.passed, regime_score:REG.score } }];\n",
+          "mode": "runOnceForAllItems",
+          "language": "javaScript"
+        },
+        "id": "16c05a55-c207-452d-bf03-82a1ced70006",
+        "name": "Quant Engine",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          304
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// NARRATOR v2 \u2014 pure $input reader (no $() cross-node reads, safe on both branches).\n// TRUE branch input: Backtest Engine output {backtest, backtest_trades, backtest_meta} \u2014 but signal lives in Validate Gates...\n// Fix: Validate Gates passes signal THROUGH Fetch 1D History? No \u2014 HTTP node drops it.\n// So Backtest Engine output lacks signal. Solution: Backtest Engine INCLUDES signal echo.\n// (patched below: Backtest Engine returns {json:{backtest, backtest_trades, backtest_meta, signal_echo}})\n// FALSE branch input: Log NO_TRADE output {decision, reason, at} \u2014 but quant reason lives in Is TRADE? input...\n// Fix: Is TRADE? passes Quant output through; Log NO_TRADE must ECHO full quant output. (patched below)\nconst cur = $input.first().json;\nfunction n(x, d){ return (x === null || x === undefined || x === '') ? d : x; }\nlet decision, reason, s, bReal;\nif(cur.backtest && cur.signal_echo){\n  // TRADE branch\n  decision = 'TRADE'; s = cur.signal_echo || {}; bReal = cur.backtest;\n  reason = '';\n} else if(cur.output && cur.output.decision){\n  // fallback: quant-shaped passthrough\n  decision = cur.output.decision; reason = cur.output.no_trade_reason || '';\n  s = cur.output.signal || {}; bReal = null;\n} else {\n  // NO_TRADE branch: Log NO_TRADE echoed full quant output?\n  decision = cur.decision || 'NO_TRADE';\n  reason = cur.reason || cur.no_trade_reason || '';\n  s = cur.signal || {};\n  bReal = null;\n}\nfunction faDir(d){ if(d === 'LONG') return '\u062e\u0631\u06cc\u062f (\u0644\u0627\u0646\u06af)'; if(d === 'SHORT') return '\u0641\u0631\u0648\u0634 (\u0634\u0648\u0631\u062a)'; return '\u2014'; }\nfunction faFam(f){ if(f === 'TREND_CONTINUATION') return '\u0627\u062f\u0627\u0645\u0647 \u0631\u0648\u0646\u062f'; if(f === 'RANGE_FADE') return '\u0628\u0631\u06af\u0634\u062a \u0627\u0632 \u0644\u0628\u0647 \u0631\u0646\u062c'; return (f || '\u2014'); }\nconst L = [];\nif(decision === 'TRADE'){\n  L.push('\u2705 \u0633\u06cc\u06af\u0646\u0627\u0644 \u06a9\u0631\u06cc\u067e\u062a\u0648 \u2014 \u0645\u0639\u0627\u0645\u0644\u0647');\n  L.push('\u0627\u0631\u0632: ' + (s.symbol || '\u061f') + ' | \u062c\u0647\u062a: ' + faDir(s.direction) + ' | \u0633\u062a\u0627\u067e: ' + faFam(s.setup_family));\n  L.push('\u0627\u0637\u0645\u06cc\u0646\u0627\u0646 \u0645\u0648\u062a\u0648\u0631: ' + n(s.confidence_0_100, 0) + ' \u0627\u0632 \u06f1\u06f0\u06f0');\n  L.push('\u0648\u0631\u0648\u062f: ' + JSON.stringify(s.entry_zone || []) + ' | \u062d\u062f \u0636\u0631\u0631: ' + n(s.stop_loss, '\u061f'));\n  L.push('\u062a\u0627\u0631\u06af\u062a\u200c\u0647\u0627: ' + n(s.tp1,'\u061f') + ' / ' + n(s.tp2,'\u061f') + ' / ' + n(s.tp3,'\u061f'));\n} else {\n  L.push('\u26d4 \u0628\u062f\u0648\u0646 \u0645\u0639\u0627\u0645\u0644\u0647');\n  L.push('\u062f\u0644\u06cc\u0644 \u0645\u0648\u062a\u0648\u0631: ' + (reason || '\u0634\u0631\u0627\u06cc\u0637 \u0644\u0627\u0632\u0645 \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u0628\u0648\u062f'));\n}\nif(bReal && bReal.trades){\n  L.push('\u0628\u06a9\u200c\u062a\u0633\u062a \u0648\u0627\u0642\u0639\u06cc: \u062a\u0639\u062f\u0627\u062f=' + bReal.trades + ' \u0627\u0645\u06cc\u062f=' + bReal.expectancy_R + 'R \u0641\u0627\u06a9\u062a\u0648\u0631=' + bReal.profit_factor + ' \u0628\u0631\u062e\u0648\u0631\u062f \u062a\u0627\u0631\u06af\u062a\u06f1=' + bReal.tp1_hit_rate + ' \u062a\u0627\u0631\u06af\u062a\u06f2=' + bReal.tp2_hit_rate);\n  L.push('\u062d\u062f\u0627\u06a9\u062b\u0631 \u0627\u0641\u062a: ' + bReal.max_drawdown_pct + 'R');\n} else {\n  L.push('\u0628\u06a9\u200c\u062a\u0633\u062a: \u062f\u0631 \u0627\u06cc\u0646 \u0627\u062c\u0631\u0627 \u0645\u0639\u0627\u0645\u0644\u0647\u200c\u0627\u06cc \u0646\u0628\u0648\u062f');\n}\nif(s.invalidation) L.push('\u0627\u0628\u0637\u0627\u0644: ' + s.invalidation);\nif(cur.regime) L.push('\u0631\u0698\u06cc\u0645: ' + cur.regime.zone + ' (' + cur.regime.score + ')');\nL.push('\u0641\u0642\u0637 \u062a\u062d\u0644\u06cc\u0644 \u0627\u0633\u062a\u060c \u062a\u0648\u0635\u06cc\u0647 \u0645\u0627\u0644\u06cc \u0646\u06cc\u0633\u062a');\nreturn [{ json: { chat_id: '6643216800', text: L.join('\\n') } }];\n"
+        },
+        "id": "cb389cb1-d2b0-4599-87d5-4d697a7004d0",
+        "name": "Narrator FA",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2192,
+          640
+        ]
+      },
+      {
+        "id": "6cd02cde-88b6-4962-b8dc-93cb501f1986",
+        "name": "Fetch ETH Klines",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          680,
+          300
+        ],
+        "parameters": {
+          "method": "GET",
+          "url": "https://api.binance.com/api/v3/klines",
+          "sendQuery": true,
+          "specifyQuery": "keypair",
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "symbol",
+                "value": "ETHUSDT"
+              },
+              {
+                "name": "interval",
+                "value": "4h"
+              },
+              {
+                "name": "limit",
+                "value": "200"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "responseFormat": "json"
+            },
+            "timeout": 30000
+          }
+        }
+      },
+      {
+        "id": "32d4c07f-71ad-4a45-9cbe-3f26a2cd608c",
+        "name": "Fetch SOL Klines",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          680,
+          420
+        ],
+        "parameters": {
+          "method": "GET",
+          "url": "https://api.binance.com/api/v3/klines",
+          "sendQuery": true,
+          "specifyQuery": "keypair",
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "symbol",
+                "value": "SOLUSDT"
+              },
+              {
+                "name": "interval",
+                "value": "4h"
+              },
+              {
+                "name": "limit",
+                "value": "200"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "responseFormat": "json"
+            },
+            "timeout": 30000
+          }
+        }
+      },
+      {
+        "id": "7c8952fd-15aa-4fd3-b1bb-50c19f770608",
+        "name": "Fetch BNB Klines",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          680,
+          540
+        ],
+        "parameters": {
+          "method": "GET",
+          "url": "https://api.binance.com/api/v3/klines",
+          "sendQuery": true,
+          "specifyQuery": "keypair",
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "symbol",
+                "value": "BNBUSDT"
+              },
+              {
+                "name": "interval",
+                "value": "4h"
+              },
+              {
+                "name": "limit",
+                "value": "200"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "responseFormat": "json"
+            },
+            "timeout": 30000
+          }
+        }
+      },
+      {
+        "id": "bf3d8927-9cbb-407f-ba99-4fd23e8313aa",
+        "name": "Fetch Funding ETH",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          680,
+          660
+        ],
+        "parameters": {
+          "method": "GET",
+          "url": "https://fapi.binance.com/fapi/v1/premiumIndex",
+          "sendQuery": true,
+          "specifyQuery": "keypair",
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "symbol",
+                "value": "ETHUSDT"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "responseFormat": "json"
+            },
+            "timeout": 30000
+          }
+        }
+      },
+      {
+        "id": "6f8cf341-a57c-4132-9120-5ff8a9fe1dcc",
+        "name": "Fetch Funding SOL",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          680,
+          780
+        ],
+        "parameters": {
+          "method": "GET",
+          "url": "https://fapi.binance.com/fapi/v1/premiumIndex",
+          "sendQuery": true,
+          "specifyQuery": "keypair",
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "symbol",
+                "value": "SOLUSDT"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "responseFormat": "json"
+            },
+            "timeout": 30000
+          }
+        }
+      },
+      {
+        "id": "59cbe90d-8870-4b3a-b515-9245b0f7d29d",
+        "name": "Fetch Funding BNB",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          680,
+          900
+        ],
+        "parameters": {
+          "method": "GET",
+          "url": "https://fapi.binance.com/fapi/v1/premiumIndex",
+          "sendQuery": true,
+          "specifyQuery": "keypair",
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "symbol",
+                "value": "BNBUSDT"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "responseFormat": "json"
+            },
+            "timeout": 30000
+          }
+        }
+      },
+      {
+        "id": "7a236863-fdd6-44b3-b745-c06a5510da14",
+        "name": "Ledger Insert",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1980,
+          640
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "insert",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "eOctngGT0qLnzQ54"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "created_at": "={{ $now.toISO() }}",
+              "symbol": "={{ $json.signal_echo.symbol }}",
+              "direction": "={{ $json.signal_echo.direction }}",
+              "setup_family": "={{ $json.signal_echo.setup_family }}",
+              "entry_mid": "={{ ($json.signal_echo.entry_zone[0]+$json.signal_echo.entry_zone[1])/2 }}",
+              "stop_loss": "={{ $json.signal_echo.stop_loss }}",
+              "tp1": "={{ $json.signal_echo.tp1 }}",
+              "tp2": "={{ $json.signal_echo.tp2 }}",
+              "tp3": "={{ $json.signal_echo.tp3 }}",
+              "confidence": "={{ $json.signal_echo.confidence_0_100 }}",
+              "confluence_passed": "={{ $json.confluence_passed || 0 }}",
+              "regime_score": "={{ $json.regime_score || 0 }}",
+              "status": "OPEN",
+              "exit_price": 0,
+              "outcome_R": 0,
+              "closed_at": ""
+            },
+            "schema": [
+              {
+                "id": "created_at",
+                "displayName": "created_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "symbol",
+                "displayName": "symbol",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "direction",
+                "displayName": "direction",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "setup_family",
+                "displayName": "setup_family",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "entry_mid",
+                "displayName": "entry_mid",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "stop_loss",
+                "displayName": "stop_loss",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "tp1",
+                "displayName": "tp1",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "tp2",
+                "displayName": "tp2",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "tp3",
+                "displayName": "tp3",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "confidence",
+                "displayName": "confidence",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "confluence_passed",
+                "displayName": "confluence_passed",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "regime_score",
+                "displayName": "regime_score",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "exit_price",
+                "displayName": "exit_price",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "outcome_R",
+                "displayName": "outcome_R",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "closed_at",
+                "displayName": "closed_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "nodeGroups": [],
+    "activeVersion": {
+      "sameAsDraft": true
+    },
+    "meta": {
+      "aiBuilderAssisted": true,
+      "builderVariant": "mcp"
+    }
+  }
+}

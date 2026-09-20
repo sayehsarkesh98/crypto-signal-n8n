@@ -1,0 +1,338 @@
+{
+  "workflow": {
+    "id": "ObXSAehgsmWcVCfK",
+    "name": "Signal Tracker (4h)",
+    "active": true,
+    "isArchived": false,
+    "versionId": "eaf6cc15-ddee-47d0-b791-3851864d8b98",
+    "activeVersionId": "eaf6cc15-ddee-47d0-b791-3851864d8b98",
+    "triggerCount": 1,
+    "nodeCount": 7,
+    "createdAt": "2026-09-19T17:50:31.585Z",
+    "updatedAt": "2026-09-20T18:06:25.955Z",
+    "settings": {
+      "executionOrder": "v1",
+      "availableInMCP": true
+    },
+    "tags": [],
+    "parentFolderId": null,
+    "scopes": [
+      "execution:reveal",
+      "workflow:create",
+      "workflow:delete",
+      "workflow:disableRedaction",
+      "workflow:enableRedaction",
+      "workflow:execute",
+      "workflow:execute-chat",
+      "workflow:export",
+      "workflow:import",
+      "workflow:list",
+      "workflow:move",
+      "workflow:publish",
+      "workflow:read",
+      "workflow:share",
+      "workflow:unpublish",
+      "workflow:unshare",
+      "workflow:update"
+    ],
+    "canExecute": true,
+    "connections": {
+      "Every 4h Tracker": {
+        "main": [
+          [
+            {
+              "node": "Fetch Ticker",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Ticker": {
+        "main": [
+          [
+            {
+              "node": "Ledger Get OPEN",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Ledger Get OPEN": {
+        "main": [
+          [
+            {
+              "node": "Evaluate Outcomes",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Evaluate Outcomes": {
+        "main": [
+          [
+            {
+              "node": "Ledger Update",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Ledger Update": {
+        "main": [
+          [
+            {
+              "node": "Sanitize Outcome",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Sanitize Outcome": {
+        "main": [
+          [
+            {
+              "node": "Telegram Outcome",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodes": [
+      {
+        "id": "b06577d9-c0b4-4b3f-884b-9a0c963128f0",
+        "name": "Every 4h Tracker",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          240,
+          300
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "hours",
+                "hoursInterval": 4,
+                "triggerAtMinute": 40
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "cc66c84e-f4b8-468b-9657-b551b4a971db",
+        "name": "Fetch Ticker",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          460,
+          300
+        ],
+        "parameters": {
+          "method": "GET",
+          "url": "https://api.binance.com/api/v3/ticker/24hr",
+          "sendQuery": true,
+          "specifyQuery": "keypair",
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "symbols",
+                "value": "[\"BTCUSDT\",\"ETHUSDT\",\"SOLUSDT\",\"BNBUSDT\"]"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "responseFormat": "json"
+            },
+            "timeout": 30000
+          }
+        }
+      },
+      {
+        "id": "79e9f45a-024c-484d-a920-2117c43a0494",
+        "name": "Ledger Get OPEN",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          680,
+          300
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "eOctngGT0qLnzQ54"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "status",
+                "condition": "eq",
+                "keyValue": "OPEN"
+              }
+            ]
+          },
+          "returnAll": true
+        }
+      },
+      {
+        "id": "2e40368f-44fb-45d6-8785-b1764a8cb4ca",
+        "name": "Evaluate Outcomes",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          900,
+          300
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "// Tracker: input = open ledger rows (from DataTable get). For each row: fetch price, decide outcome.\n// Output: items {id, patch:{status, exit_price, outcome_R, closed_at}} for update node.\nconst rows = $input.all().map(function(i){ return i.json; });\nconst out = [];\nfor(const r of rows){\n  if(r.status && r.status !== 'OPEN') continue;\n  const sym = r.symbol;\n  let px = null;\n  try {\n    const t = $('Fetch Ticker').first().json;\n    // t is array of 10 tickers (array item) OR single item list\n    const list = Array.isArray(t) ? t : (t.json || t);\n    const arr = Array.isArray(list) ? list : [list];\n    const hit = arr.filter(function(x){ return x.symbol === sym; })[0];\n    if(hit) px = parseFloat(hit.lastPrice);\n  } catch(e) {}\n  if(px === null || isNaN(px)) continue;\n  const dir = r.direction;\n  const tp1 = r.tp1, sl = r.stop_loss;\n  const stopHit = dir === 'LONG' ? px <= sl : px >= sl;\n  const tp1Hit = dir === 'LONG' ? px >= tp1 : px <= tp1;\n  const R = Math.abs(r.entry_mid - sl);\n  let patch = null;\n  if(stopHit){\n    patch = { status: 'STOP', exit_price: sl, outcome_R: -1 + (dir==='LONG'? -0.0007*(r.entry_mid):0)*0, closed_at: new Date().toISOString() };\n  } else if(tp1Hit){\n    patch = { status: 'TP1', exit_price: tp1, outcome_R: R>0 ? 1.5 - 0.001 : 0, closed_at: new Date().toISOString() };\n  }\n  if(patch){ out.push({ json: { id: r.id, symbol: sym, patch: patch } }); }\n}\nreturn out.length ? out : [];\n"
+        }
+      },
+      {
+        "id": "98bcb776-83c2-49bf-ac65-60056642334e",
+        "name": "Ledger Update",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1120,
+          300
+        ],
+        "parameters": {
+          "resource": "row",
+          "operation": "update",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "eOctngGT0qLnzQ54"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "id",
+                "condition": "eq",
+                "keyValue": "={{ $json.id }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "status": "={{ $json.patch.status }}",
+              "exit_price": "={{ $json.patch.exit_price }}",
+              "outcome_R": "={{ $json.patch.outcome_R }}",
+              "closed_at": "={{ $json.patch.closed_at }}"
+            },
+            "schema": [
+              {
+                "id": "created_at",
+                "displayName": "created_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "exit_price",
+                "displayName": "exit_price",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "outcome_R",
+                "displayName": "outcome_R",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "closed_at",
+                "displayName": "closed_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ]
+          },
+          "returnAll": false
+        }
+      },
+      {
+        "id": "bc41b0ab-adf2-40d7-87a6-003e8e4ae758",
+        "name": "Telegram Outcome",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.5,
+        "position": [
+          1340,
+          300
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.telegram.org/bot8764733374:AAGUZCPajEpsyO0_v_lQYqEofBnORKC2W2M/sendMessage",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\"chat_id\": \"6643216800\", \"text\": \"{{ $json.text }}\"}",
+          "options": {
+            "response": {
+              "responseFormat": "json"
+            },
+            "timeout": 30000
+          }
+        }
+      },
+      {
+        "id": "f474acb9-3132-438f-803c-5a3f649cf72e",
+        "name": "Sanitize Outcome",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1230,
+          300
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "language": "javaScript",
+          "jsCode": "const t = $input.first().json;\nconst st = t.status || ((t.patch&&t.patch.status)||'?');\nconst ex = (t.exit_price!==undefined&&t.exit_price!==0)?t.exit_price:((t.patch&&t.patch.exit_price)||'?');\nconst rr = (t.outcome_R!==undefined&&!(t.outcome_R===0&&st==='OPEN'))?t.outcome_R:((t.patch&&t.patch.outcome_R)||'?');\nlet s = '\u0646\u062a\u064a\u062c\u0647 \u0633\u064a\u06af\u0646\u0627\u0644 ' + (t.symbol||'?') + ' \u2190 ' + st + ' | \u062e\u0631\u0648\u062c: ' + ex + ' | R: ' + rr;\ns = s.replace(/[\\u0000-\\u001F\\u007F-\\u009F]/g, ' ').trim().slice(0,1000);\nreturn [{ json: { chat_id: '6643216800', text: s } }];"
+        }
+      }
+    ],
+    "nodeGroups": [],
+    "activeVersion": {
+      "sameAsDraft": true
+    },
+    "meta": {
+      "aiBuilderAssisted": true,
+      "builderVariant": "mcp"
+    }
+  }
+}
