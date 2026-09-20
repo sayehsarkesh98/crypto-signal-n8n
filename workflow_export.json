@@ -7,7 +7,7 @@
     "versionId": "2adb8067-97a1-4af2-9ab8-43dbf513c7a5",
     "activeVersionId": "2adb8067-97a1-4af2-9ab8-43dbf513c7a5",
     "triggerCount": 1,
-    "nodeCount": 33,
+    "nodeCount": 34,
     "createdAt": "2026-09-16T23:25:55.144Z",
     "updatedAt": "2026-09-20T18:06:24.321Z",
     "settings": {
@@ -337,7 +337,18 @@
           ],
           [
             {
-              "node": "Log NO_TRADE",
+              "node": "Log Gate Fail",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Log Gate Fail": {
+        "main": [
+          [
+            {
+              "node": "Narrator FA",
               "type": "main",
               "index": 0
             }
@@ -1264,6 +1275,18 @@
         ],
         "id": "gates-pass-if-001",
         "name": "Gates Pass?"
+      },
+      {
+        "name": "Log Gate Fail",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2368,
+          80
+        ],
+        "parameters": {
+          "jsCode": "// Log NO_TRADE v3 — two input shapes:\n// 1) Quant output passthrough (Is TRADE? FALSE branch): {output, quant_meta}.\n// 2) Gate-failed item (Gates Pass? FALSE branch): {backtest, signal_echo, gate_check, ...}.\nconst q = $input.first().json;\nif(q.gate_check){\n  const b = q.backtest || {};\n  const btStr = 'bt: trades=' + (b.trades||0) + ' exp=' + (b.expectancy_R===null?'-':b.expectancy_R) + 'R pf=' + (b.profit_factor===null?'-':b.profit_factor);\n  return [{ json: { decision: 'NO_TRADE', reason: 'gate-failed: ' + (q.gate_check.failed_gates||[]).join(', ') + ' | ' + btStr, at: new Date().toISOString(),\n    signal: q.signal_echo || {}, regime: q.regime_echo || null, confluences: [], quant_meta: null } }];\n}\nconst o = q.output || q;\nreturn [{ json: { decision: 'NO_TRADE', reason: o.no_trade_reason || 'filtered', at: new Date().toISOString(),\n  signal: o.signal || {}, regime: o.regime || null, confluences: o.confluences || [], quant_meta: q.quant_meta || null } }];\n"
+        }
       }
     ],
     "nodeGroups": [],

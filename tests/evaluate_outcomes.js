@@ -2,7 +2,18 @@
 // Signal gives time_stop_1h_candles=24 → 24 HOURS; ledger rows older than that with
 // neither STOP nor TP1 hit now close as TIME_STOP with the signed R of the live price.
 // (Prevents rows stuck OPEN forever from closing months later on a stale stop.)
-const rows = $input.all().map(function(i){ return i.json; });
+const rowsAll = $input.all().map(function(i){ return i.json; });
+// Ledger Get OPEN runs once per incoming Fetch Ticker item (HTTP node splits the
+// 4-symbol array into 4 items), so rows arrive duplicated — dedupe by row id.
+const seen = {};
+const rows = [];
+for (const r of rowsAll) {
+  if (r.status && r.status !== 'OPEN') continue;
+  const k = String(r.id);
+  if (seen[k]) continue;
+  seen[k] = 1;
+  rows.push(r);
+}
 let tarr = [];
 try {
   for(const t of $('Fetch Ticker').all().map(function(i){ return i.json; })){

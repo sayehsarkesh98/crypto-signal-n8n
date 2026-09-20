@@ -18,7 +18,9 @@ jq --arg n "Quant Engine" --rawfile src engines/quant_engine.js \
   workflow_export.json > workflow_export.json.new && mv workflow_export.json.new workflow_export.json
 ```
 
-Node-name ↔ file map: Compute Indicators → `compute_indicators.js`, Quant Engine → `quant_engine.js`, Backtest Engine → `backtest_engine.js`, Validate Gates → `validate_gates.js`, Narrator FA → `narrator_fa.js`, Log NO_TRADE → `log_no_trade.js`, Sanitize Telegram Text → `sanitize_telegram.js`. Tracker code nodes live in `tests/evaluate_outcomes.js` (Evaluate Outcomes) — same sync pattern. Test harnesses (`tests/test_*.js`) mock `$input`/`$` and run under plain `node tests/test_<name>.js`. Extract a node's code with `jq -r '.workflow.nodes[] | select(.name=="…") | .parameters.jsCode'`.
+Node-name ↔ file map: Compute Indicators → `compute_indicators.js`, Quant Engine → `quant_engine.js`, Backtest Engine → `backtest_engine.js`, Validate Gates → `validate_gates.js`, Narrator FA → `narrator_fa.js`, Log NO_TRADE → `log_no_trade.js`, Sanitize Telegram Text → `sanitize_telegram.js`. `Log Gate Fail` is a second Code node carrying the same `log_no_trade.js` (dedicated single-edge receiver for the gate-fail branch — a dual-inbound junction on one node silently dead-ends when one source finishes with 0 items). Tracker code lives in `tests/evaluate_outcomes.js` (Evaluate Outcomes) — same sync pattern. Test harnesses (`tests/test_*.js`) mock `$input`/`$` and run under plain `node tests/test_<name>.js`. Extract a node's code with `jq -r '.workflow.nodes[] | select(.name=="…") | .parameters.jsCode'`.
+
+**Live instance + deploy model:** both workflows run on n8n cloud at `shadow98.app.n8n.cloud` (ids `UJZtZI0WcaDN0jDs` / `ObXSAehgsmWcVCfK`, ledger table `eOctngGT0qLnzQ54`, project `ZZCsYexXoYT4B5nY`). Deploy via the n8n MCP server (`update_workflow` with operation objects, then **`publish_workflow`** — updates land on a draft; production executions keep running the last published version until you publish). Gotcha: `addConnection`/`removeConnection` ignore flat `sourcePort/targetPort` fields — to target a specific IF output use `sourceOutput`/`targetInput`; flat fields silently connect output 0. This repo's exports mirror the live published workflows (Log Gate Fail included, 34 nodes).
 
 ## Main workflow architecture (every 4h at :35)
 
@@ -27,7 +29,7 @@ Schedule (:35) ─fan-out→ 11 HTTP nodes ──→ Merge Inputs (5 inputs) →
 Quant Engine → Is TRADE? ($json.output.decision == "TRADE")
   TRUE:  Fetch 1D History → Backtest Engine → Validate Gates → Gates Pass? (IF on $json.gate_check.passed)
          TRUE:  Ledger Insert → Narrator FA → Sanitize Telegram Text → Telegram HTTP Sender
-         FALSE: Log NO_TRADE → Narrator FA → Sanitize Telegram Text → Telegram HTTP Sender
+         FALSE: Log Gate Fail → Narrator FA → Sanitize Telegram Text → Telegram HTTP Sender
   FALSE: Log NO_TRADE → Narrator FA → Sanitize Telegram Text → Telegram HTTP Sender
 ```
 
@@ -51,7 +53,7 @@ Backtest Engine v3 replays the setup as **multi-instance with no look-ahead**: a
 
 ## Signal Tracker (tracker_export.json, every 4h at :40)
 
-Schedule → Fetch Ticker (4 pairs) → Ledger Get OPEN → Evaluate Outcomes → Ledger Update → Sanitize Outcome → Telegram. Each OPEN row is checked against the live price at that moment: STOP if beyond stop_loss (−1R), TP1 if reached (+1.4R recorded, i.e. 1.5 − fees), or TIME_STOP once the row is older than `time_stop` hours (default 24, from `time_stop_1h_candles: 24`) with the signed R of the live price — before v3, rows that never hit either level stayed OPEN forever. STOP wins if both hit at check time; there is no intrabar sequencing. Purpose: build real-world hit statistics to retune the engine's thresholds (confluences, confidence floor, RSI veto).
+Schedule → Fetch Ticker (4 pairs) → Ledger Get OPEN → Evaluate Outcomes → Ledger Update → Sanitize Outcome → Telegram. Each OPEN row is checked against the live price at that moment: STOP if beyond stop_loss (−1R), TP1 if reached (+1.4R recorded, i.e. 1.5 − fees), or TIME_STOP once the row is older than `time_stop` hours (default 24, from `time_stop_1h_candles: 24`) with the signed R of the live price — before v3, rows that never hit either level stayed OPEN forever. STOP wins if both hit at check time; there is no intrabar sequencing. Two splitter traps to keep in mind: the HTTP node splits the ticker array into 4 items (Evaluate Outcomes flattens all of them — `.first()` sees only BTCUSDT), and Ledger Get OPEN therefore runs once per ticker item, so rows arrive duplicated and the code dedupes by row id. Purpose: build real-world hit statistics to retune the engine's thresholds (confluences, confidence floor, RSI veto).
 
 **Data store:** n8n Data Table `eOctngGT0qLnzQ54` (the "signal_ledger"). Columns: `created_at, symbol, direction, setup_family, entry_mid, stop_loss, tp1, tp2, tp3, confidence, confluence_passed, regime_score, status (OPEN|STOP|TP1|TIME_STOP), exit_price, outcome_R, closed_at`. `confluence_passed` and `regime_score` are echoed from Quant Engine through Backtest Engine — a Data Table insert drops unmapped input fields, so any new stat must be added to that echo chain first. The table id is instance-specific — re-link `dataTableId` in Ledger Insert/Get/Update after importing into a fresh n8n instance.
 
