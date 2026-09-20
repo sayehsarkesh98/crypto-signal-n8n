@@ -88,4 +88,4 @@ function stats(tr){
   };
 }
 const bt = stats(trades);
-return [{ json: { backtest: bt, backtest_trades: trades.slice(-60), backtest_meta: { candles: K.length, symbol: inp.symbol || null }, signal_echo: S, decision_echo: 'TRADE' } }];
+return [{ json: { backtest: bt, backtest_trades: trades.slice(-60), backtest_meta: { candles: K.length, symbol: inp.symbol || null }, signal_echo: S, regime_echo: (vg.output && vg.output.regime) || null, decision_echo: 'TRADE' } }];

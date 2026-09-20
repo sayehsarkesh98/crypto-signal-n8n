@@ -5,7 +5,15 @@
 // (patched below: Backtest Engine returns {json:{backtest, backtest_trades, backtest_meta, signal_echo}})
 // FALSE branch input: Log NO_TRADE output {decision, reason, at} — but quant reason lives in Is TRADE? input...
 // Fix: Is TRADE? passes Quant output through; Log NO_TRADE must ECHO full quant output. (patched below)
-const cur = $input.first().json;
+const cur0 = $input.first().json;
+// TRADE branch: direct input is the Ledger Insert row (columns+id only, no backtest).
+// Prefer the Backtest Engine output (backtest + signal_echo + regime_echo) via cross-node
+// read; on the NO_TRADE branch Backtest Engine never ran, the read throws, keep $input.
+let cur = cur0;
+try {
+  const bt = $('Backtest Engine').first().json;
+  if (bt && bt.backtest) cur = bt;
+} catch (e) { /* branch without Backtest Engine */ }
 function n(x, d){ return (x === null || x === undefined || x === '') ? d : x; }
 let decision, reason, s, bReal;
 if(cur.backtest && cur.signal_echo){
@@ -43,6 +51,7 @@ if(bReal && bReal.trades){
   L.push('بک‌تست: در این اجرا معامله‌ای نبود');
 }
 if(s.invalidation) L.push('ابطال: ' + s.invalidation);
-if(cur.regime) L.push('رژیم: ' + cur.regime.zone + ' (' + cur.regime.score + ')');
+const REG = cur.regime || cur.regime_echo || null;
+if(REG && REG.zone) L.push('رژیم: ' + REG.zone + ' (' + REG.score + ')');
 L.push('فقط تحلیل است، توصیه مالی نیست');
 return [{ json: { chat_id: '6643216800', text: L.join('\n') } }];

@@ -198,7 +198,7 @@
         "parameters": {
           "mode": "runOnceForAllItems",
           "language": "javaScript",
-          "jsCode": "// Tracker: input = open ledger rows (from DataTable get). For each row: fetch price, decide outcome.\n// Output: items {id, patch:{status, exit_price, outcome_R, closed_at}} for update node.\nconst rows = $input.all().map(function(i){ return i.json; });\nconst out = [];\nfor(const r of rows){\n  if(r.status && r.status !== 'OPEN') continue;\n  const sym = r.symbol;\n  let px = null;\n  try {\n    const t = $('Fetch Ticker').first().json;\n    // t is array of 10 tickers (array item) OR single item list\n    const list = Array.isArray(t) ? t : (t.json || t);\n    const arr = Array.isArray(list) ? list : [list];\n    const hit = arr.filter(function(x){ return x.symbol === sym; })[0];\n    if(hit) px = parseFloat(hit.lastPrice);\n  } catch(e) {}\n  if(px === null || isNaN(px)) continue;\n  const dir = r.direction;\n  const tp1 = r.tp1, sl = r.stop_loss;\n  const stopHit = dir === 'LONG' ? px <= sl : px >= sl;\n  const tp1Hit = dir === 'LONG' ? px >= tp1 : px <= tp1;\n  const R = Math.abs(r.entry_mid - sl);\n  let patch = null;\n  if(stopHit){\n    patch = { status: 'STOP', exit_price: sl, outcome_R: -1 + (dir==='LONG'? -0.0007*(r.entry_mid):0)*0, closed_at: new Date().toISOString() };\n  } else if(tp1Hit){\n    patch = { status: 'TP1', exit_price: tp1, outcome_R: R>0 ? 1.5 - 0.001 : 0, closed_at: new Date().toISOString() };\n  }\n  if(patch){ out.push({ json: { id: r.id, symbol: sym, patch: patch } }); }\n}\nreturn out.length ? out : [];\n"
+          "jsCode": "// Tracker: input = open ledger rows (DataTable get). For each row: decide outcome using\n// ALL tickers from Fetch Ticker. (Fix 2026-09-20: the HTTP node splits the 4-symbol array\n// response into separate items, so $('Fetch Ticker').first() saw only BTCUSDT — ETH/SOL/BNB\n// rows stayed OPEN forever. Now all items are flattened before per-row matching.)\nconst rows = $input.all().map(function(i){ return i.json; });\nlet tarr = [];\ntry {\n  for(const t of $('Fetch Ticker').all().map(function(i){ return i.json; })){\n    if(Array.isArray(t)) tarr = tarr.concat(t);\n    else if(t && t.symbol) tarr.push(t);\n    else if(t && Array.isArray(t.json)) tarr = tarr.concat(t.json);\n  }\n} catch(e) { tarr = []; }\nconst out = [];\nfor(const r of rows){\n  if(r.status && r.status !== 'OPEN') continue;\n  const sym = r.symbol;\n  let px = null;\n  const hit = tarr.filter(function(x){ return x && x.symbol === sym; })[0];\n  if(hit){ const p = parseFloat(hit.lastPrice); if(!isNaN(p)) px = p; }\n  if(px === null) continue;\n  const dir = r.direction;\n  const tp1 = r.tp1, sl = r.stop_loss;\n  const stopHit = dir === 'LONG' ? px <= sl : px >= sl;\n  const tp1Hit = dir === 'LONG' ? px >= tp1 : px <= tp1;\n  const R = Math.abs(r.entry_mid - sl);\n  let patch = null;\n  if(stopHit){\n    patch = { status: 'STOP', exit_price: sl, outcome_R: -1 + (dir==='LONG'? -0.0007*(r.entry_mid):0)*0, closed_at: new Date().toISOString() };\n  } else if(tp1Hit){\n    patch = { status: 'TP1', exit_price: tp1, outcome_R: R>0 ? 1.5 - 0.001 : 0, closed_at: new Date().toISOString() };\n  }\n  if(patch){ out.push({ json: { id: r.id, symbol: sym, patch: patch } }); }\n}\nreturn out.length ? out : [];\n"
         }
       },
       {
@@ -298,7 +298,7 @@
         ],
         "parameters": {
           "method": "POST",
-          "url": "https://api.telegram.org/bot8764733374:AAGUZCPajEpsyO0_v_lQYqEofBnORKC2W2M/sendMessage",
+          "url": "https://api.telegram.org/bot{{TELEGRAM_BOT_TOKEN}}/sendMessage",
           "sendBody": true,
           "specifyBody": "json",
           "jsonBody": "={\"chat_id\": \"6643216800\", \"text\": \"{{ $json.text }}\"}",
@@ -322,7 +322,7 @@
         "parameters": {
           "mode": "runOnceForAllItems",
           "language": "javaScript",
-          "jsCode": "const t = $input.first().json;\nconst st = t.status || ((t.patch&&t.patch.status)||'?');\nconst ex = (t.exit_price!==undefined&&t.exit_price!==0)?t.exit_price:((t.patch&&t.patch.exit_price)||'?');\nconst rr = (t.outcome_R!==undefined&&!(t.outcome_R===0&&st==='OPEN'))?t.outcome_R:((t.patch&&t.patch.outcome_R)||'?');\nlet s = '\u0646\u062a\u064a\u062c\u0647 \u0633\u064a\u06af\u0646\u0627\u0644 ' + (t.symbol||'?') + ' \u2190 ' + st + ' | \u062e\u0631\u0648\u062c: ' + ex + ' | R: ' + rr;\ns = s.replace(/[\\u0000-\\u001F\\u007F-\\u009F]/g, ' ').trim().slice(0,1000);\nreturn [{ json: { chat_id: '6643216800', text: s } }];"
+          "jsCode": "const t = $input.first().json;\nconst st = t.status || ((t.patch&&t.patch.status)||'?');\nconst ex = (t.exit_price!==undefined&&t.exit_price!==0)?t.exit_price:((t.patch&&t.patch.exit_price)||'?');\nconst rr = (t.outcome_R!==undefined&&!(t.outcome_R===0&&st==='OPEN'))?t.outcome_R:((t.patch&&t.patch.outcome_R)||'?');\nlet s = 'نتيجه سيگنال ' + (t.symbol||'?') + ' ← ' + st + ' | خروج: ' + ex + ' | R: ' + rr;\ns = s.replace(/[\\u0000-\\u001F\\u007F-\\u009F]/g, ' ').trim().slice(0,1000);\nreturn [{ json: { chat_id: '6643216800', text: s } }];"
         }
       }
     ],
