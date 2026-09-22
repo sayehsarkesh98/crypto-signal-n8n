@@ -322,7 +322,7 @@
         "parameters": {
           "mode": "runOnceForAllItems",
           "language": "javaScript",
-          "jsCode": "const t = $input.first().json;\nconst st = t.status || ((t.patch&&t.patch.status)||'?');\nconst ex = (t.exit_price!==undefined&&t.exit_price!==0)?t.exit_price:((t.patch&&t.patch.exit_price)||'?');\nconst rr = (t.outcome_R!==undefined&&!(t.outcome_R===0&&st==='OPEN'))?t.outcome_R:((t.patch&&t.patch.outcome_R)||'?');\nlet s = 'نتيجه سيگنال ' + (t.symbol||'?') + ' ← ' + st + ' | خروج: ' + ex + ' | R: ' + rr;\ns = s.replace(/[\\u0000-\\u001F\\u007F-\\u009F]/g, ' ').trim().slice(0,1000);\nreturn [{ json: { chat_id: '6643216800', text: s } }];"
+          "jsCode": "// Sanitize Outcome v2 — one message per closed row. (v1 used $input.first() and\n// dropped every row except the first: in tracker exec 77 on 2026-09-21 four rows\n// closed in one pass and three TP1 notifications were silently lost.)\nconst out = [];\nfor (const it of $input.all()) {\n  const t = it.json || {};\n  const st = t.status || ((t.patch && t.patch.status) || \"?\");\n  const ex = (t.exit_price !== undefined && t.exit_price !== 0) ? t.exit_price : ((t.patch && t.patch.exit_price) || \"?\");\n  const rr = (t.outcome_R !== undefined && !(t.outcome_R === 0 && st === \"OPEN\")) ? t.outcome_R : ((t.patch && t.patch.outcome_R) || \"?\");\n  let s = \"نتیجه سیگنال \" + (t.symbol || \"?\") + \" ← \" + st + \" | خروج: \" + ex + \" | R: \" + rr;\n  s = s.replace(/[\\u0000-\\u001F\\u007F-\\u009F]/g, \" \").trim().slice(0, 1000);\n  out.push({ json: { chat_id: \"6643216800\", text: s } });\n}\nreturn out;"
         }
       }
     ],
