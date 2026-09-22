@@ -1,23 +1,31 @@
-// NARRATOR v2 — pure $input reader (no $() cross-node reads, safe on both branches).
-// TRUE branch input: Backtest Engine output {backtest, backtest_trades, backtest_meta} — but signal lives in Validate Gates...
-// Fix: Validate Gates passes signal THROUGH Fetch 1D History? No — HTTP node drops it.
-// So Backtest Engine output lacks signal. Solution: Backtest Engine INCLUDES signal echo.
-// (patched below: Backtest Engine returns {json:{backtest, backtest_trades, backtest_meta, signal_echo}})
-// FALSE branch input: Log NO_TRADE output {decision, reason, at} — but quant reason lives in Is TRADE? input...
-// Fix: Is TRADE? passes Quant output through; Log NO_TRADE must ECHO full quant output. (patched below)
-const cur = $input.first().json;
+// NARRATOR v3 — three-way dispatch: TRADE / gate-failed / NO_TRADE.
+// TRADE branch: direct input is the Ledger Insert row (inserted columns only). The
+// full context comes from the cross-node read of Validate Gates — which since the
+// 2026-09-20 rewire sits AFTER Backtest Engine and carries {backtest, signal_echo,
+// gate_check, confluence_passed, regime_score, regime_echo} in one item.
+// gate_check.passed === false → NO_TRADE message WITH the real backtest numbers and
+// the failed gate list (gates are blocking now; hiding a rejection would be a lie).
+// Quant NO_TRADE branch: Validate Gates never ran → cross-node read throws → fall
+// back to $input (Log NO_TRADE echo of the Quant output).
+const cur0 = $input.first().json;
+let cur = cur0;
+try {
+  const vg = $('Validate Gates').first().json;
+  if (vg && vg.backtest) cur = vg;
+} catch (e) { /* branch without Validate Gates */ }
 function n(x, d){ return (x === null || x === undefined || x === '') ? d : x; }
 let decision, reason, s, bReal;
-if(cur.backtest && cur.signal_echo){
-  // TRADE branch
-  decision = 'TRADE'; s = cur.signal_echo || {}; bReal = cur.backtest;
-  reason = '';
+if(cur.backtest && cur.gate_check){
+  s = cur.signal_echo || {};
+  bReal = cur.backtest;
+  if(cur.gate_check.passed){ decision = 'TRADE'; reason = ''; }
+  else { decision = 'NO_TRADE'; reason = 'gate-failed: ' + ((cur.gate_check.failed_gates || []).join(', ')); }
+} else if(cur.backtest && cur.signal_echo){
+  decision = 'TRADE'; s = cur.signal_echo || {}; bReal = cur.backtest; reason = '';
 } else if(cur.output && cur.output.decision){
-  // fallback: quant-shaped passthrough
   decision = cur.output.decision; reason = cur.output.no_trade_reason || '';
   s = cur.output.signal || {}; bReal = null;
 } else {
-  // NO_TRADE branch: Log NO_TRADE echoed full quant output?
   decision = cur.decision || 'NO_TRADE';
   reason = cur.reason || cur.no_trade_reason || '';
   s = cur.signal || {};
@@ -43,6 +51,7 @@ if(bReal && bReal.trades){
   L.push('بک‌تست: در این اجرا معامله‌ای نبود');
 }
 if(s.invalidation) L.push('ابطال: ' + s.invalidation);
-if(cur.regime) L.push('رژیم: ' + cur.regime.zone + ' (' + cur.regime.score + ')');
+const REG = cur.regime || cur.regime_echo || null;
+if(REG && REG.zone) L.push('رژیم: ' + REG.zone + ' (' + REG.score + ')');
 L.push('فقط تحلیل است، توصیه مالی نیست');
 return [{ json: { chat_id: '6643216800', text: L.join('\n') } }];
